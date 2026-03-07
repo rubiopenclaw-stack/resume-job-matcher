@@ -1,84 +1,136 @@
 """
-職缺獲取器 - 從 RemoteOK API 抓取職缺
+職缺獲取器 - 多來源
+支持：RemoteOK, remote4me (WeWorkRemotely API 已失效)
 """
 
 import os
 import json
 import requests
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List, Dict
 from datetime import datetime, timedelta
 
-REMOTEOK_API = "https://remoteok.com/api"
 
-
-def fetch_remoteok_jobs(tag: Optional[str] = None, limit: int = 50) -> List[Dict]:
+# ========== RemoteOK ==========
+def fetch_remoteok_jobs(limit: int = 50) -> List[Dict]:
     """從 RemoteOK 抓取職缺"""
-    url = REMOTEOK_API
-    if tag:
-        url = f"{REMOTEOK_API}?tag={tag}"
-    
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
         'Accept': 'application/json',
-        'Accept-Language': 'en-US,en;q=0.9',
     }
     
     try:
-        response = requests.get(url, headers=headers, timeout=30)
-        response.raise_for_status()
+        response = requests.get("https://remoteok.com/api", headers=headers, timeout=30)
         jobs = response.json()
         
-        # 過濾掉 legal 和無效數據
         filtered = []
         for job in jobs:
             if job.get('slug') and job.get('company') and job.get('position'):
-                job['title'] = job.pop('position')  # 統一欄位名
-                # 優先使用 apply_url，否則用 url
+                job['title'] = job.pop('position')
                 job['url'] = job.get('apply_url') or f"https://remoteok.com/l/{job['slug']}"
+                job['source'] = 'RemoteOK'
                 filtered.append(job)
         
         return filtered[:limit]
     except Exception as e:
-        print(f"Error fetching RemoteOK: {e}")
+        print(f"RemoteOK error: {e}")
         return []
 
 
-def fetch_ai_jobs(limit: int = 30) -> List[Dict]:
-    """抓取 AI 相關職缺"""
-    return fetch_remoteok_jobs('ai', limit)
+# ========== remote4me ==========
+def fetch_remote4me_jobs(limit: int = 30) -> List[Dict]:
+    """從 remote4me 抓取職缺"""
+    try:
+        response = requests.get("https://remote4me.com/api/v1/jobs", timeout=15)
+        if response.status_code != 200:
+            return []
+        
+        jobs = response.json()
+        
+        filtered = []
+        for job in jobs[:limit]:
+            if job.get('title') and job.get('company'):
+                filtered.append({
+                    'id': job.get('id'),
+                    'title': job.get('title'),
+                    'company': job.get('company'),
+                    'url': job.get('url', ''),
+                    'description': job.get('description', ''),
+                    'tags': job.get('tags', []),
+                    'location': job.get('location') or 'Remote',
+                    'source': 'remote4me'
+                })
+        
+        return filtered
+    except:
+        return []
 
 
-def fetch_dev_jobs(limit: int = 30) -> List[Dict]:
-    """抓取開發者職缺"""
-    return fetch_remoteok_jobs('dev', limit)
+# ========== JustRemote ==========
+def fetch_justremote_jobs(limit: int = 30) -> List[Dict]:
+    """從 justremote.co 抓取職缺"""
+    try:
+        response = requests.get("https://justremote.co/api/v1/jobs", timeout=15)
+        jobs = response.json()
+        
+        filtered = []
+        for job in jobs[:limit]:
+            if job.get('title'):
+                filtered.append({
+                    'id': job.get('id'),
+                    'title': job.get('title'),
+                    'company': job.get('company', {}).get('name') if isinstance(job.get('company'), dict) else job.get('company'),
+                    'url': job.get('url'),
+                    'description': job.get('description', ''),
+                    'tags': job.get('tags', []),
+                    'location': job.get('location') or 'Remote',
+                    'source': 'JustRemote'
+                })
+        
+        return filtered
+    except:
+        return []
 
 
-def fetch_all_jobs(limit_per_tag: int = 20) -> List[Dict]:
-    """抓取多標籤職缺"""
-    tags = ['ai', 'python', 'javascript', 'react', 'golang', 'rust', 'devops', 'data', 'remote']
+# ========== Main ==========
+def fetch_all_jobs(limit_per_source: int = 40) -> List[Dict]:
+    """從多來源抓取職缺"""
     all_jobs = []
     seen_ids = set()
     
-    for tag in tags:
-        jobs = fetch_remoteok_jobs(tag, limit_per_tag)
-        for job in jobs:
-            if job.get('id') not in seen_ids:
-                seen_ids.add(job.get('id'))
-                job['tag'] = tag
-                all_jobs.append(job)
+    sources = [
+        ('RemoteOK', fetch_remoteok_jobs),
+        ('remote4me', fetch_remote4me_jobs),
+    ]
     
+    print("📡 Fetching jobs from multiple sources...")
+    
+    for name, fetcher in sources:
+        try:
+            jobs = fetcher(limit_per_source)
+            print(f"   - {name}: {len(jobs)} jobs")
+            
+            for job in jobs:
+                unique_id = f"{job.get('source')}-{job.get('id')}"
+                if unique_id not in seen_ids:
+                    seen_ids.add(unique_id)
+                    all_jobs.append(job)
+        except Exception as e:
+            print(f"   - {name}: failed ({e})")
+    
+    print(f"   Total: {len(all_jobs)} unique jobs")
     return all_jobs
 
 
 def save_jobs(jobs: List[Dict], filepath: str = 'jobs/latest.json'):
-    """保存職缺到文件"""
+    """保存職缺"""
     Path(filepath).parent.mkdir(parents=True, exist_ok=True)
     
     data = {
         'fetched_at': datetime.now().isoformat(),
         'count': len(jobs),
-        'jobs': jobs
+        'jobs': jobs,
+        'sources': list(set(j.get('source') for j in jobs))
     }
     
     with open(filepath, 'w', encoding='utf-8') as f:
@@ -86,32 +138,22 @@ def save_jobs(jobs: List[Dict], filepath: str = 'jobs/latest.json'):
 
 
 def load_jobs(filepath: str = 'jobs/latest.json') -> List[Dict]:
-    """從文件加載職缺"""
+    """加載職缺"""
     if not Path(filepath).exists():
         return fetch_all_jobs()
     
     with open(filepath, 'r', encoding='utf-8') as f:
         data = json.load(f)
     
-    # 檢查是否需要刷新（超過 6 小時）
     fetched_at = datetime.fromisoformat(data['fetched_at'])
     if datetime.now() - fetched_at > timedelta(hours=6):
-        print("Jobs cache expired, refetching...")
+        print("Cache expired, refetching...")
         return fetch_all_jobs()
     
     return data.get('jobs', [])
 
 
-def get_job_tags() -> List[str]:
-    """取得熱門職缺標籤"""
-    return [
-        'ai', 'python', 'javascript', 'typescript', 'react', 
-        'golang', 'rust', 'java', 'devops', 'data', 'machine-learning',
-        'docker', 'kubernetes', 'aws', 'gcp', 'fullstack', 'remote'
-    ]
-
-
 if __name__ == '__main__':
     jobs = fetch_all_jobs()
     save_jobs(jobs)
-    print(f"Fetched {len(jobs)} jobs")
+    print(f"\n✅ Saved {len(jobs)} jobs")

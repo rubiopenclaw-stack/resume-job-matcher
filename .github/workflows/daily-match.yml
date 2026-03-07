@@ -4,16 +4,6 @@ on:
   schedule:
     - cron: '0 0 * * *'  # 每天 UTC 0:00 (台北 8:00)
   workflow_dispatch:
-    inputs:
-      notify_method:
-        description: 'Notification method'
-        required: true
-        default: 'resend'
-        type: choice
-        options:
-          - resend
-          - openclaw
-          - both
   push:
     branches:
       - main
@@ -34,42 +24,13 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests python-dotenv openai resend flask
+          pip install requests openai python-dotenv
 
-      - name: Fetch jobs
+      - name: Fetch & Match jobs
         env:
-          REMOTEOK_API_TOKEN: ${{ secrets.REMOTEOK_API_TOKEN }}
-        run: python src/fetcher.py
-
-      - name: Match and notify (Resend)
-        if: github.event.inputs.notify_method == 'resend' || (github.event.inputs.notify_method == '' && env.NOTIFY_METHOD != 'openclaw')
-        env:
-          NOTIFY_METHOD: resend
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          EMAIL_TO: ${{ secrets.EMAIL_TO }}
-          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: python src/main.py
-
-      - name: Match and notify (OpenClaw)
-        if: github.event.inputs.notify_method == 'openclaw' || github.event.inputs.notify_method == 'both'
-        env:
-          NOTIFY_METHOD: openclaw
-          GATEWAY_URL: ${{ secrets.OPENCLAW_GATEWAY_URL }}
-          GATEWAY_TOKEN: ${{ secrets.OPENCLAW_GATEWAY_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           MESSAGE_TARGET: ${{ secrets.MESSAGE_TARGET }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: python src/main.py
-
-      - name: Match and notify (Both)
-        if: github.event.inputs.notify_method == 'both'
-        env:
-          NOTIFY_METHOD: both
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          EMAIL_TO: ${{ secrets.EMAIL_TO }}
-          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
-          GATEWAY_URL: ${{ secrets.OPENCLAW_GATEWAY_URL }}
-          GATEWAY_TOKEN: ${{ secrets.OPENCLAW_GATEWAY_TOKEN }}
-          MESSAGE_TARGET: ${{ secrets.MESSAGE_TARGET }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
         run: python src/main.py
