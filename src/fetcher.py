@@ -34,7 +34,8 @@ def fetch_remoteok_jobs(tag: Optional[str] = None, limit: int = 50) -> List[Dict
         for job in jobs:
             if job.get('slug') and job.get('company') and job.get('position'):
                 job['title'] = job.pop('position')  # 統一欄位名
-                job['url'] = f"https://remoteok.com/l/{job['slug']}"
+                # 優先使用 apply_url，否則用 url
+                job['url'] = job.get('apply_url') or f"https://remoteok.com/l/{job['slug']}"
                 filtered.append(job)
         
         return filtered[:limit]
