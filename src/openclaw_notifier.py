@@ -1,5 +1,5 @@
 """
-OpenClaw 通知器 - 透過 OpenClaw Gateway 發送訊息
+OpenClaw / Telegram 通知器
 """
 
 import os
@@ -8,60 +8,61 @@ import requests
 from typing import Dict, List, Optional
 
 
-# OpenClaw Gateway 配置
-GATEWAY_URL = os.environ.get('GATEWAY_URL', 'http://localhost:3000')
-GATEWAY_TOKEN = os.environ.get('GATEWAY_TOKEN', '')
-MESSAGE_CHANNEL = os.environ.get('MESSAGE_CHANNEL', 'telegram')  # telegram, discord, whatsapp
+# OpenClaw 配置
+GATEWAY_URL = os.environ.get('GATEWAY_URL', 'http://localhost:18789')
+GATEWAY_TOKEN = os.environ.get('GATEWAY_TOKEN', '0000')
+
+# Telegram Bot 配置（備用方案）
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+TELEGRAM_CHAT_ID = os.environ.get('MESSAGE_TARGET') or os.environ.get('TELEGRAM_CHAT_ID')
 
 
-def get_status():
-    """檢查 OpenClaw Gateway 狀態"""
-    try:
-        response = requests.get(f"{GATEWAY_URL}/api/status", timeout=5)
-        return response.json() if response.ok else None
-    except:
-        return None
-
-
-def send_via_gateway(message: str, to: str = None, channel: str = None) -> bool:
-    """透過 OpenClaw Gateway 發送訊息"""
-    if not GATEWAY_TOKEN:
-        print("⚠️ GATEWAY_TOKEN not set")
+def send_telegram_message(message: str, chat_id: str = None, parse_mode: str = 'Markdown') -> bool:
+    """直接透過 Telegram Bot API 發送訊息"""
+    token = TELEGRAM_BOT_TOKEN
+    if not token:
+        # 嘗試從 OpenClaw config 获取
+        token = os.environ.get('OPENCLAW_TELEGRAM_TOKEN')
+    
+    if not token:
+        print("❌ No Telegram bot token available")
         return False
     
-    channel = channel or MESSAGE_CHANNEL
+    chat_id = chat_id or TELEGRAM_CHAT_ID
+    if not chat_id:
+        print("❌ No chat ID specified")
+        return False
+    
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
     
     payload = {
-        "channel": channel,
-        "message": message,
+        "chat_id": chat_id,
+        "text": message,
+        "parse_mode": parse_mode,
+        "disable_web_page_preview": True
     }
     
-    if to:
-        payload["to"] = to
+    try:
+        response = requests.post(url, json=payload, timeout=10)
+        if response.ok:
+            print(f"✅ Telegram message sent: {response.json()}")
+            return True
+        else:
+            print(f"❌ Telegram API error: {response.status_code} - {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ Error sending Telegram: {e}")
+        return False
+
+
+def send_via_gateway(message: str, to: str = None) -> bool:
+    """嘗試透過 OpenClaw Gateway 發送"""
+    # 先嘗試 Telegram Bot（更可靠）
+    if TELEGRAM_BOT_TOKEN or os.environ.get('OPENCLAW_TELEGRAM_TOKEN'):
+        return send_telegram_message(message, to)
     
-    # 嘗試不同的 API 端點
-    endpoints = [
-        f"{GATEWAY_URL}/api/message",
-        f"{GATEWAY_URL}/api/send",
-    ]
-    
-    headers = {
-        "Authorization": f"Bearer {GATEWAY_TOKEN}",
-        "Content-Type": "application/json"
-    }
-    
-    for endpoint in endpoints:
-        try:
-            response = requests.post(endpoint, json=payload, headers=headers, timeout=10)
-            if response.ok:
-                print(f"✅ Message sent via OpenClaw: {response.json()}")
-                return True
-            else:
-                print(f"❌ Failed to {endpoint}: {response.status_code} - {response.text}")
-        except Exception as e:
-            print(f"❌ Error sending to {endpoint}: {e}")
-            continue
-    
+    # 如果沒有 Bot Token，嘗試 Gateway（需要 webhook 設定）
+    print("⚠️ Gateway webhook not configured, skipping")
     return False
 
 
@@ -83,84 +84,41 @@ def format_job_message(resume: Dict, matched_jobs: List[Dict]) -> str:
         
         title = job.get('title', 'N/A')[:30]
         company = job.get('company', 'N/A')[:20]
-        salary = job.get('salary', '💰')[:15]
+        
+        # 薪資
+        salary = job.get('salary', '')
+        if not salary:
+            salary = '💰'
+        
+        # 連結
+        url = job.get('url', '')
         
         message += f"{i}. *{title}*\n"
         message += f"   🏢 {company} | {salary}\n"
-        message += f"   🎯 {score}% | [申請]({job.get('url', '')})\n\n"
+        message += f"   🎯 {score}% | [申請]({url})\n\n"
     
     if len(matched_jobs) > 5:
         message += f"⋯ 還有 {len(matched_jobs) - 5} 個職缺"
+    
+    message += "\n\n💡 完整職缺清單請查看 Email"
     
     return message
 
 
 def send_to_openclaw(resume: Dict, matched_jobs: List[Dict], target: str = None) -> bool:
-    """發送到 OpenClaw"""
+    """發送到 OpenClaw/Telegram"""
     message = format_job_message(resume, matched_jobs)
-    return send_via_gateway(message, to=target)
-
-
-def interactive_query(user_question: str) -> str:
-    """處理用戶的互動查詢（預留給未來對話功能）"""
-    # 這是一個預留接口，未來可以對接 LLM 來回答問題
-    return f"收到問題：{user_question}\n\n請到網頁版查看完整職缺列表"
-
-
-# ========== 以下為可選的 Webhook 伺服器 ==========
-
-def create_webhook_handler(jobs_path: str = 'jobs/latest.json', resumes_path: str = 'resumes'):
-    """建立 webhook 處理器（需要在外部 server 運行）"""
-    from flask import Flask, request, jsonify
-    from parser import get_all_resumes, parse_resume
-    from matcher import match_jobs
-    
-    app = Flask(__name__)
-    
-    @app.route('/webhook/job-query', methods=['POST'])
-    def query_jobs():
-        data = request.json
-        user_skills = data.get('skills', [])
-        preferred_roles = data.get('roles', [])
-        
-        # 解析所有履歷
-        resumes = get_all_resumes(resumes_path)
-        
-        # 載入職缺
-        import json
-        from pathlib import Path
-        jobs_data = json.load(open(jobs_path))
-        jobs = jobs_data.get('jobs', [])
-        
-        # 創建臨時履歷進行匹配
-        temp_resume = {
-            'name': data.get('name', 'Query User'),
-            'skills': user_skills,
-            'preferred_roles': preferred_roles,
-            'preferred_locations': ['Remote']
-        }
-        
-        matched = match_jobs(temp_resume, jobs, top_n=10)
-        
-        return jsonify({
-            'matches': [
-                {
-                    'title': m['job'].get('title'),
-                    'company': m['job'].get('company'),
-                    'score': m['score'],
-                    'url': m['job'].get('url')
-                }
-                for m in matched
-            ]
-        })
-    
-    return app
+    return send_telegram_message(message, target)
 
 
 if __name__ == '__main__':
     # Test
-    status = get_status()
-    if status:
-        print(f"✅ OpenClaw Gateway: {status}")
-    else:
-        print("❌ OpenClaw Gateway not reachable")
+    test_resume = {'name': 'Test User', 'skills': ['python', 'ai']}
+    test_jobs = [
+        {'title': 'AI Engineer', 'company': 'TestCorp', 'url': 'https://example.com', 'salary': '$100k'},
+    ]
+    test_matched = [{'job': test_jobs[0], 'score': 95, 'matched_skills': ['python', 'ai']}]
+    
+    print("Testing Telegram notification...")
+    # Uncomment to test:
+    # send_to_openclaw(test_resume, test_matched, '6702902886')

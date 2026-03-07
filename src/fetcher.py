@@ -16,26 +16,28 @@ def fetch_remoteok_jobs(tag: Optional[str] = None, limit: int = 50) -> List[Dict
     """從 RemoteOK 抓取職缺"""
     url = REMOTEOK_API
     if tag:
-        url = f"{REMOTEOK_API}/{tag}"
+        url = f"{REMOTEOK_API}?tag={tag}"
     
     headers = {
-        'User-Agent': 'Resume-Job-Matcher/1.0'
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json',
+        'Accept-Language': 'en-US,en;q=0.9',
     }
-    
-    # 加入 API token 如果有
-    token = os.environ.get('REMOTEOK_API_TOKEN')
-    if token:
-        headers['Authorization'] = f'Bearer {token}'
     
     try:
         response = requests.get(url, headers=headers, timeout=30)
         response.raise_for_status()
         jobs = response.json()
         
-        # 過濾掉 sticky jobs 和無效數據
-        filtered = [job for job in jobs[1:] if job.get('id')][:limit]  # skip header
+        # 過濾掉 legal 和無效數據
+        filtered = []
+        for job in jobs:
+            if job.get('slug') and job.get('company') and job.get('position'):
+                job['title'] = job.pop('position')  # 統一欄位名
+                job['url'] = f"https://remoteok.com/l/{job['slug']}"
+                filtered.append(job)
         
-        return filtered
+        return filtered[:limit]
     except Exception as e:
         print(f"Error fetching RemoteOK: {e}")
         return []
@@ -53,7 +55,7 @@ def fetch_dev_jobs(limit: int = 30) -> List[Dict]:
 
 def fetch_all_jobs(limit_per_tag: int = 20) -> List[Dict]:
     """抓取多標籤職缺"""
-    tags = ['ai', 'python', 'javascript', 'react', 'golang', 'rust', 'devops', 'data']
+    tags = ['ai', 'python', 'javascript', 'react', 'golang', 'rust', 'devops', 'data', 'remote']
     all_jobs = []
     seen_ids = set()
     
@@ -87,7 +89,7 @@ def load_jobs(filepath: str = 'jobs/latest.json') -> List[Dict]:
     if not Path(filepath).exists():
         return fetch_all_jobs()
     
-    with open(filepath, 'encoding='utf-8') as f:
+    with open(filepath, 'r', encoding='utf-8') as f:
         data = json.load(f)
     
     # 檢查是否需要刷新（超過 6 小時）
