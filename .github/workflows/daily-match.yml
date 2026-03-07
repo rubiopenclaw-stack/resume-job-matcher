@@ -1,0 +1,40 @@
+name: Match Jobs Daily
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # 每天 UTC 0:00 (台北 8:00)
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'resumes/**'
+
+jobs:
+  match:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests python-dotenv openai resend
+
+      - name: Fetch jobs
+        env:
+          REMOTEOK_API_TOKEN: ${{ secrets.REMOTEOK_API_TOKEN }}
+        run: python src/fetcher.py
+
+      - name: Match and notify
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: python src/main.py
