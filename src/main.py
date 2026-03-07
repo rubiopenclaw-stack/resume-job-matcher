@@ -12,11 +12,44 @@ sys.path.insert(0, str(Path(__file__).parent))
 from parser import get_all_resumes
 from fetcher import fetch_all_jobs, save_jobs, load_jobs
 from matcher import match_jobs, get_summary_stats
-from notifier import send_match_report, send_digest_email
+
+# 根據通知方式導入
+NOTIFY_METHOD = os.environ.get('NOTIFY_METHOD', 'resend')  # resend, openclaw, both
+
+if NOTIFY_METHOD in ['openclaw', 'both']:
+    from openclaw_notifier import send_to_openclaw
+
+if NOTIFY_METHOD in ['resend', 'both']:
+    from notifier import send_match_report
+
+
+def notify(resume: Dict, matched_jobs: List[Dict], email_to: str = None) -> bool:
+    """根據設定發送通知"""
+    success = False
+    
+    # OpenClaw 通知
+    if NOTIFY_METHOD in ['openclaw', 'both']:
+        openclaw_target = os.environ.get('MESSAGE_TARGET')  # Telegram chat ID
+        if send_to_openclaw(resume, matched_jobs, target=openclaw_target):
+            print(f"   ✅ OpenClaw message sent")
+            success = True
+    
+    # Email 通知
+    if NOTIFY_METHOD in ['resend', 'both'] and email_to:
+        if send_match_report(resume, matched_jobs, email_to):
+            print(f"   ✅ Email sent to {email_to}")
+            success = True
+    
+    return success
 
 
 def main():
     print("🚀 Resume Job Matcher Starting...")
+    
+    # 顯示設定
+    print(f"   Notify method: {NOTIFY_METHOD}")
+    if NOTIFY_METHOD in ['openclaw', 'both']:
+        print(f"   OpenClaw: Enabled")
     
     # 1. 解析履歷
     print("\n📄 Parsing resumes...")
@@ -50,10 +83,6 @@ def main():
     print("\n🎯 Matching jobs...")
     email_to = os.environ.get('EMAIL_TO')
     
-    if not email_to:
-        print("❌ EMAIL_TO not set")
-        return
-    
     # 為每個履歷匹配並發送
     for resume in resumes:
         print(f"\n   Processing {resume['name']}...")
@@ -64,12 +93,8 @@ def main():
             stats = get_summary_stats(matched)
             print(f"   Matched {stats['count']} jobs, avg score: {stats['avg_score']}%")
             
-            # 發送郵件
-            success = send_match_report(resume, matched, email_to)
-            if success:
-                print(f"   ✅ Email sent to {email_to}")
-            else:
-                print(f"   ❌ Failed to send email")
+            # 發送通知
+            notify(resume, matched, email_to)
         else:
             print(f"   ⚠️ No matching jobs found")
     
