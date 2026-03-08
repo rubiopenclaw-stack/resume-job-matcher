@@ -112,16 +112,18 @@ async def get_jobs(
     search: Optional[str] = Query(None, description="搜尋關鍵字"),
     source: Optional[str] = Query(None, description="篩選來源"),
     location: Optional[str] = Query(None, description="篩選地點"),
+    salary_min: Optional[int] = Query(None, description="最低薪資過濾"),
+    salary_max: Optional[int] = Query(None, description="最高薪資過濾"),
     limit: int = Query(50, description="回傳數量限制"),
     refresh: bool = Query(False, description="強制重新整理快取")
 ):
     """取得職缺列表 (含快取)"""
-    
+
     if refresh:
         invalidate_cache()
-    
+
     jobs, cached_at = get_jobs_cache()
-    
+
     # 來源過濾（先套用，再搜尋）
     if source:
         jobs = [j for j in jobs if j.get('source') == source]
@@ -131,16 +133,22 @@ async def get_jobs(
         location_lower = location.lower()
         jobs = [j for j in jobs if location_lower in j.get('location', '').lower()]
 
+    # 薪資過濾（salary_min 和 salary_max 欄位）
+    if salary_min is not None:
+        jobs = [j for j in jobs if (j.get('salary_max') or 0) >= salary_min]
+    if salary_max is not None:
+        jobs = [j for j in jobs if (j.get('salary_min') or 0) <= salary_max]
+
     # 搜尋過濾
     if search:
         jobs = search_jobs(jobs, search)
-    
+
     # 限制數量
     jobs = jobs[:limit]
-    
+
     # 計算快取年齡
     cache_age = (datetime.now() - cached_at).seconds // 60
-    
+
     return {
         "count": len(jobs),
         "cache_age_minutes": cache_age,
@@ -188,6 +196,16 @@ async def refresh_jobs():
         return {"status": "success", "count": len(jobs)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/jobs/{job_id}")
+async def get_job(job_id: str):
+    """取得單一職缺詳情"""
+    jobs, _ = get_jobs_cache()
+    for job in jobs:
+        if str(job.get('id', '')) == job_id:
+            return job
+    raise HTTPException(status_code=404, detail=f"Job '{job_id}' not found")
 
 
 @app.get("/api/health")

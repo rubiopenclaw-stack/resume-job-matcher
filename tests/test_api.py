@@ -286,3 +286,64 @@ class TestSearchLogic:
         data_lower = client.get('/api/jobs?search=python').json()
         data_upper = client.get('/api/jobs?search=PYTHON').json()
         assert data_lower['count'] == data_upper['count']
+
+
+# ===== Tests: GET /api/jobs/{job_id} =====
+
+class TestGetJobByIdEndpoint:
+
+    def test_get_existing_job_returns_200(self, client):
+        response = client.get('/api/jobs/rok-1')
+        assert response.status_code == 200
+
+    def test_get_existing_job_returns_correct_data(self, client):
+        data = client.get('/api/jobs/rok-1').json()
+        assert data['id'] == 'rok-1'
+        assert data['title'] == 'Senior Python Developer'
+
+    def test_get_nonexistent_job_returns_404(self, client):
+        response = client.get('/api/jobs/nonexistent-999')
+        assert response.status_code == 404
+
+    def test_get_job_404_has_detail(self, client):
+        data = client.get('/api/jobs/missing').json()
+        assert 'detail' in data
+
+    def test_get_another_job_by_id(self, client):
+        data = client.get('/api/jobs/rem-2').json()
+        assert data['id'] == 'rem-2'
+        assert data['company'] == 'WebCo'
+
+
+# ===== Tests: Salary filtering =====
+
+class TestSalaryFiltering:
+
+    def test_salary_min_filter(self, client):
+        """Jobs where salary_max >= salary_min should pass"""
+        data = client.get('/api/jobs?salary_min=110000').json()
+        for job in data['jobs']:
+            assert (job.get('salary_max') or 0) >= 110000
+
+    def test_salary_max_filter(self, client):
+        """Jobs where salary_min <= salary_max should pass"""
+        data = client.get('/api/jobs?salary_max=130000').json()
+        for job in data['jobs']:
+            assert (job.get('salary_min') or 0) <= 130000
+
+    def test_salary_min_excludes_low_paying(self, client):
+        """Very high salary_min should exclude most jobs"""
+        data = client.get('/api/jobs?salary_min=200000').json()
+        assert data['count'] == 0
+
+    def test_salary_filter_combined(self, client):
+        """salary_min + salary_max combined"""
+        data = client.get('/api/jobs?salary_min=50000&salary_max=150000').json()
+        for job in data['jobs']:
+            assert (job.get('salary_max') or 0) >= 50000
+            assert (job.get('salary_min') or 0) <= 150000
+
+    def test_no_salary_filter_returns_all(self, client):
+        """Without salary filters, all jobs are returned"""
+        data = client.get('/api/jobs').json()
+        assert data['count'] == len(SAMPLE_JOBS)
