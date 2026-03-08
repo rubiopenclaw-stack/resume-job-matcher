@@ -45,12 +45,15 @@ def calculate_match_score(resume_skills: List[str], job: Dict) -> float:
     for skill in resume_skills:
         skill_lower = skill.lower()
         
-        # 檢查是否有權重
-        weight = 1
-        for key, w in SKILL_WEIGHTS.items():
-            if key in skill_lower or skill_lower in key:
-                weight = w
-                break
+        # 檢查是否有權重（先直接查找，再做子字串掃描）
+        weight = SKILL_WEIGHTS.get(skill_lower)
+        if weight is None:
+            for key, w in SKILL_WEIGHTS.items():
+                if key in skill_lower or skill_lower in key:
+                    weight = w
+                    break
+            else:
+                weight = 1
         
         total_weight += weight
         
