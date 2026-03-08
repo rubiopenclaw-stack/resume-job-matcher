@@ -7,6 +7,7 @@ import os
 import json
 import requests
 from abc import ABC, abstractmethod
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import List, Dict, Optional
 from datetime import datetime, timedelta
@@ -148,33 +149,41 @@ class JobFetcher:
     
     @classmethod
     def fetch_all(cls, sources: Optional[List[str]] = None, limit_per_source: int = 40) -> List[Dict]:
-        """從多來源抓取職缺"""
+        """從多來源並行抓取職缺"""
         all_jobs = []
         seen_ids = set()
-        
+
         # 如果沒指定來源，使用所有可用的
         if sources is None:
             sources = list(cls.ADAPTERS.keys())
-        
-        print("📡 Fetching jobs from multiple sources...")
-        
-        for name in sources:
-            if name not in cls.ADAPTERS:
-                print(f"   - {name}: unknown source (skipping)")
-                continue
-                
+
+        valid_sources = [name for name in sources if name in cls.ADAPTERS]
+        unknown_sources = [name for name in sources if name not in cls.ADAPTERS]
+        for name in unknown_sources:
+            print(f"   - {name}: unknown source (skipping)")
+
+        print("📡 Fetching jobs from multiple sources (parallel)...")
+
+        def _fetch_one(name: str):
             try:
                 jobs = cls.ADAPTERS[name].fetch(limit_per_source)
                 print(f"   - {name}: {len(jobs)} jobs")
-                
-                for job in jobs:
-                    unique_id = f"{job.get('source')}-{job.get('id', job.get('slug', ''))}"
-                    if unique_id not in seen_ids:
-                        seen_ids.add(unique_id)
-                        all_jobs.append(job)
+                return name, jobs
             except Exception as e:
                 print(f"   - {name}: failed ({e})")
-        
+                return name, []
+
+        with ThreadPoolExecutor(max_workers=len(valid_sources) or 1) as executor:
+            futures = {executor.submit(_fetch_one, name): name for name in valid_sources}
+            results = [future.result() for future in as_completed(futures)]
+
+        for _, jobs in results:
+            for job in jobs:
+                unique_id = f"{job.get('source')}-{job.get('id', job.get('slug', ''))}"
+                if unique_id not in seen_ids:
+                    seen_ids.add(unique_id)
+                    all_jobs.append(job)
+
         print(f"   Total: {len(all_jobs)} unique jobs")
         return all_jobs
 
