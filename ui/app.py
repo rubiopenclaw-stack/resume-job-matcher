@@ -199,7 +199,7 @@ with tab1:
         st.markdown("### ⚡ 快速操作")
         if st.button("📤 匯出所有職缺", use_container_width=True):
             jobs_json = json.dumps(jobs, ensure_ascii=False, indent=2)
-            st.downloadButton(
+            st.download_button(
                 "💾 下載 JSON",
                 jobs_json,
                 f"jobs_{datetime.now().strftime('%Y%m%d')}.json",
@@ -493,7 +493,7 @@ with tab3:
         col_act1, col_act2 = st.columns([1, 4])
         with col_act1:
             fav_json = json.dumps(st.session_state.favorites, ensure_ascii=False, indent=2)
-            st.downloadButton("📥 匯出收藏", fav_json, "favorites.json", "application/json")
+            st.download_button("📥 匯出收藏", fav_json, "favorites.json", "application/json")
         with col_act2:
             if st.button("🗑️ 清空收藏"):
                 st.session_state.favorites = []
@@ -524,7 +524,7 @@ with tab4:
     
     if history:
         # 匯出
-        st.downloadButton(
+        st.download_button(
             "📥 匯出全部歷史",
             json.dumps(history, ensure_ascii=False, indent=2),
             f"history_{datetime.now().strftime('%Y%m%d')}.json",

@@ -3,5 +3,387 @@
     "date": "2026-01-01",
     "resume": "test",
     "matched_count": 5
+  },
+  {
+    "date": "2026-03-07T17:52:09.510386",
+    "resume": "Example User",
+    "matched_count": 10,
+    "matches": [
+      {
+        "job": {
+          "slug": "remote-technical-support-engineer-emea-chainguard-1130613",
+          "id": "1130613",
+          "epoch": 1772557217,
+          "date": "2026-03-03T17:00:17+00:00",
+          "company": "Chainguard",
+          "company_logo": "",
+          "tags": [
+            "teach",
+            "technical",
+            "support",
+            "code",
+            "engineer",
+            "engineering"
+          ],
+          "description": "<div><p><strong>The role in a nutshell:</strong></p>\n<p>Weâre looking for a <strong>Technical Support Engineer</strong> whoâs equal parts problem-solver, translator, and customer hero. Youâll be the go-to person when customers hit snags with Chainguard Images, digging into technical mysteries, keeping folks informed, and partnering with Engineering to squash bugs before they cause chaos. This isnât just âreset the password and move onâ support: youâll work on real, complex issues with modern tools (Docker, Kubernetes, GitHub, Helm charts, Terraform, etc.), make customers feel like superheroes themselves, and help shape how Chainguard delivers world-class support. Serious work, fun team, big impact.</p>\n<p>&nbsp;</p>\n<p><strong>What youâll do:</strong></p>\n<ul>\n<li><strong>Be the frontline agent</strong>: Triage, investigate, reproduce, manage, and annihilate complex customer issues involving Chainguard Images.</li>\n<li><strong>Escalate wisely</strong>: Engage the Engineering team when things get spicy.</li>\n<li><strong>Communicate like a pro</strong>: Keep customers (and your SLAs) happy, informed, and impressed.</li>\n<li><strong>Bridge the tech lingo divide</strong>: Explain things clearly to both code whisperers and non-tech humans.</li>\n<li><strong>Document like a librarian</strong>: Create detailed write-ups of new issues and throw helpful Knowledge Base nuggets into the mix.</li>\n<li><strong>Channel your inner detective</strong>: Prioritize your own queue, drive clarity in communication, and proactively guide issues to resolution.</li>\n<li><strong>Speak up smartly</strong>: Push bugs, feature requests, and hidden gremlins up to Engineering and GTM teams.</li>\n<li><strong>Learn, teach, repeat</strong>: Seek new challenges, share wisdom, and maybe teach someone your favorite GitHub ninja trick.</li>\n<li><strong>Be there when it counts: </strong>Participate in an on-call rotation for after-hours, weekend, and holiday support.<br><br></li>\n</ul>\n<p><strong>What we're looking for:</strong></p>\n<ul>\n<li>Youâve spent 3+ years suppor<br/><br/>Please mention the word **AUTHORITATIVE** and tag RNTguODAuMTQ4Ljk4 when applying to show you read the job post completely (#RNTguODAuMTQ4Ljk4). This is a beta feature to avoid spam applicants. Companies can search these words to find applicants that read this and see they're human.",
+          "location": "Germany - Remote; United Kingdom - Remote",
+          "apply_url": "https://remoteOK.com/remote-jobs/remote-technical-support-engineer-emea-chainguard-1130613",
+          "salary_min": 0,
+          "salary_max": 0,
+          "logo": "",
+          "url": "https://remoteOK.com/remote-jobs/remote-technical-support-engineer-emea-chainguard-1130613",
+          "title": "Technical Support Engineer EMEA",
+          "source": "RemoteOK"
+        },
+        "score": 34.4,
+        "matched_skills": [
+          "agent",
+          "ai",
+          "docker",
+          "ml"
+        ],
+        "evaluation": {
+          "reason": "關鍵字匹配"
+        }
+      },
+      {
+        "job": {
+          "slug": "remote-senior-data-engineer-federato-1130607",
+          "id": "1130607",
+          "epoch": 1772553617,
+          "date": "2026-03-03T16:00:17+00:00",
+          "company": "Federato",
+          "company_logo": "",
+          "tags": [
+            "support",
+            "software",
+            "senior",
+            "engineer",
+            "engineering"
+          ],
+          "description": "<p><a href=\"https://www.federato.ai/\">Federato</a> is on a mission to defend the right to efficient, equitable insurance for all. We enable insurers to provide affordable coverage to people and organizations facing the issues of today - the climate crisis, cyber-attacks, social inflation, etc. Our vision is understood and well funded by those behind Salesforce, Veeva, Zoom, Box, etc.<br><br>Federato is the only AI-native platform that spans the full policy lifecycle and changes the way insurance work gets done. Better decisioning is built-in, not bolted on: insurers' unique portfolio goals, strategies, rules, and appetite are part of the workflow so underwriters win the right deals, faster. From the moment a submission hits an underwriter's inbox, AI is put to work, triaging submissions with a focus on high-appetite business, delivering real-time feedback on the portfolio, and consolidating workflows into a single proven system. Federato drives better business outcomes.</p><div><p><span style=\"text-decoration: underline;\"><strong>Role Overview</strong></span><br>You'll be joining a small, high-impact data engineering team within Federato's AI/ML organization. Our focus is on building the infrastructure and internal frameworks that empower machine learning engineers to develop, deploy, and iterate on AI-powered features ranging from prompt-based LLM workflows to more traditional model-driven systems. We collaborate closely with ML, analytics, and product teams to ensure data and tooling are reliable, scalable, and aligned with the needs of our AI-native platform.</p>\n<p><span style=\"text-decoration: underline;\"><strong>What You'll Be Doing</strong>:</span></p>\n<ul>\n<li>Collaborate with Data Science, Product Managers and Software Engineers to build robust ETL pipelines that enable the Product Support team to deliver compelling user-facing features</li>\n<li>Contribute to architecture decisions, observability tooling, and dat<br/><br/>Please mention the word **SAINT** and tag RNTguODAuMTQ4Ljk4 when applying to show you read the job post completely (#RNTguODAuMTQ4Ljk4). This is a beta feature to avoid spam applicants. Companies can search these words to find applicants that read this and see they're human.",
+          "location": "Remote",
+          "apply_url": "https://remoteOK.com/remote-jobs/remote-senior-data-engineer-federato-1130607",
+          "salary_min": 0,
+          "salary_max": 0,
+          "logo": "",
+          "url": "https://remoteOK.com/remote-jobs/remote-senior-data-engineer-federato-1130607",
+          "title": "Senior Data Engineer",
+          "source": "RemoteOK"
+        },
+        "score": 31.2,
+        "matched_skills": [
+          "ai",
+          "llm",
+          "ml"
+        ],
+        "evaluation": {
+          "reason": "關鍵字匹配"
+        }
+      },
+      {
+        "job": {
+          "slug": "remote-backend-developer-autods-1130651",
+          "id": "1130651",
+          "epoch": 1772762412,
+          "date": "2026-03-06T02:00:12+00:00",
+          "company": "AutoDS",
+          "company_logo": "",
+          "tags": [
+            "developer",
+            "back-end",
+            "python",
+            "reliability",
+            "backend",
+            "ecommerce",
+            "e-commerce",
+            "digital nomad"
+          ],
+          "description": "At <strong>AutoDS</strong>, recently acquired by Fiverr, we're revolutionizing the eCommerce world by providing innovative tools that empower online sellers globally. As a fast-growing company, we're looking for talented individuals who are passionate about technology, eCommerce, and making a real impact. If you're ready to join a dynamic team and thrive in a collaborative, fast-paced environment, we'd love to hear from you!\n\nAutoDS is looking for a Backend Developer to join us!\n\nAt AutoDS, we're transforming the world of e-commerce by automating and simplifying the entire dropshipping process. Our platform empowers sellers by automating every step from product sourcing to order fulfillment.\n\nWe're focused on making e-commerce accessible and efficient, letting sellers spend less time managing orders and more time growing their businesses. Join AutoDS and be part of a team that's pioneering the future of e-commerce and innovation!\n\nAs a Backend Developer, you will play a pivotal role in driving the success of an exciting and groundbreaking e-commerce project. We're looking for a forward-thinking individual who thrives on solving complex challenges and is passionate about elevating their work to new heights.\n\n<strong>Key Responsibilities</strong>\n<ul>\n<li>Contribute to the development and maintenance of the company's core product.</li>\n<li>Enhance and extend Flask-based back-end services.</li>\n<li>Design and implement integrations with internal and external APIs.</li>\n<li>Advocate for and uphold best coding practices, delivering high-quality, scalable solutions.</li>\n<li>Take part in maintaining production reliability through a shared on-call rotation.(Pager Duty)<br><br></li>\n</ul>\n<p><strong>Required Skills and Qualifications</strong></p>\n<p>Hard Skills:</p>\n<ul>\n<li>Proven expertise in Python with 4+&nbsp; years of hands-on experience.</li>\n<li>Proficiency in at least one additional object-oriented programming language.</li>\n<li>Solid experience with SQL and database management.</li>\n<li>Exper<br/><br/>Please mention the word **WHOA** and tag RNTguODAuMTQ4Ljk4 when applying to show you read the job post completely (#RNTguODAuMTQ4Ljk4). This is a beta feature to avoid spam applicants. Companies can search these words to find applicants that read this and see they're human.",
+          "location": "Remote",
+          "apply_url": "https://remoteOK.com/remote-jobs/remote-backend-developer-autods-1130651",
+          "salary_min": 0,
+          "salary_max": 0,
+          "logo": "",
+          "url": "https://remoteOK.com/remote-jobs/remote-backend-developer-autods-1130651",
+          "title": "Backend Developer",
+          "source": "RemoteOK"
+        },
+        "score": 28.1,
+        "matched_skills": [
+          "ai",
+          "llm",
+          "python"
+        ],
+        "evaluation": {
+          "reason": "關鍵字匹配"
+        }
+      },
+      {
+        "job": {
+          "slug": "remote-staff-full-stack-engineer-contacts-calendly-1130649",
+          "id": "1130649",
+          "epoch": 1772751614,
+          "date": "2026-03-05T23:00:14+00:00",
+          "company": "Calendly",
+          "company_logo": "",
+          "tags": [
+            "design",
+            "system",
+            "technical",
+            "support",
+            "growth",
+            "director",
+            "lead",
+            "senior",
+            "engineer",
+            "engineering",
+            "digital nomad"
+          ],
+          "description": "Whatâs in it for you? Ready to make a serious impact? Millions of people already rely on Calendly, and weâre still in the midst of exciting product growth â itâs a fantastic time to join us. Everything youâll work on here will accelerate your career to the next level. If you want to learn, grow, and do the best work of your life alongside the best people youâve ever worked with, then we hope youâll consider allowing Calendly to be a part of your professional journey. About the team & opportunity Calendlyâs Contacts team is building a system that turns contacts data into a rich, reliable system of record and unlocks new engagement workflows for our customers. We own the core contact data model, ingestion and enrichment pipelines, and the experiences that make it easy for users to act on their relationships across Calendly. Weâre taking a 0 - 1 product to its next phase of maturity, scale, and innovation. That means evolving our architecture, hardening our platform, and rapidly iterating on new AI-powered workflows that help solopreneurs and teams turn meetings into meaningful relationships. Youâll report to an Engineering Director in Contacts and partner closely with other team leaders in driving our Contacts technical strategy. Why do we need you? Weâre looking for a Staff Engineer who can: Own critical parts of our Contacts stack end-to-end, from technical design to rollout and ongoing reliability. Guide the evolution from early-stage architecture to a scalable, well-instrumented, multi-tenant system that other teams can safely build on. Lead big, cross-cutting â0â1 to 1â100â initiatives in partnership with Product, Design, and other Engineering teams Raise the technical bar for the team through mentoring, eng leadership, and high-quality execution. A day in the life of an Staff Engineer at Calendly On a typical day, you will: Design and evolve services and data models for contacts and relationships that can support new workflows and downstream consumers. Drive decisions around our APIs, eventing, and data flows to keep Contacts a reliable system of record. Own complex, high-impact projects (e.g., new ingestion pipelines, enrichment features, or contact-centric workflows) from technical discovery through launch and iterative improvement. Break down ambiguous problem spaces into clear milestones and incremental, ship-as-you-go plans. Provide technical leadership across squads and workstreams, helping teams make good tradeoffs on performance, reliability, and complexity. Mentor senior and mid-level engineers, review design docs and PRs, and codify best practices in testing, observability, and production readiness. Collaborate with PMs and designers to translate customer problems into pragmatic solutions, especially for solopreneurs and small teams adopting CRM for the first time. Help define MVP scopes, instrumentation, and learning loops so we can move fast without compromising<br/><br/>Please mention the word **RAPID** and tag RNTguODAuMTQ4Ljk4 when applying to show you read the job post completely (#RNTguODAuMTQ4Ljk4). This is a beta feature to avoid spam applicants. Companies can search these words to find applicants that read this and see they're human.",
+          "location": "Remote - US",
+          "apply_url": "https://remoteOK.com/remote-jobs/remote-staff-full-stack-engineer-contacts-calendly-1130649",
+          "salary_min": 0,
+          "salary_max": 0,
+          "logo": "",
+          "url": "https://remoteOK.com/remote-jobs/remote-staff-full-stack-engineer-contacts-calendly-1130649",
+          "title": "Staff Full Stack Engineer Contacts",
+          "source": "RemoteOK"
+        },
+        "score": 9.4,
+        "matched_skills": [
+          "ai"
+        ],
+        "evaluation": {
+          "reason": "關鍵字匹配"
+        }
+      },
+      {
+        "job": {
+          "slug": "remote-ux-ui-designer-the-real-deal-1130648",
+          "id": "1130648",
+          "epoch": 1772748881,
+          "date": "2026-03-05T22:14:41+00:00",
+          "company": "The Real Deal",
+          "company_logo": "",
+          "tags": [
+            "ui",
+            "ux",
+            "designer",
+            "support",
+            "education"
+          ],
+          "description": "<p><b>This&nbsp;is&nbsp;a&nbsp;freelance,&nbsp;hourly&nbsp;contract&nbsp;role&nbsp;working&nbsp;on&nbsp;a&nbsp;project&nbsp;basis</b></p><p><br></p><p><b>Job&nbsp;Details:</b></p><p><br></p><p>We&nbsp;are&nbsp;seeking&nbsp;a&nbsp;UX/UI&nbsp;designer&nbsp;who&nbsp;can&nbsp;improve&nbsp;usability,&nbsp;spacing,&nbsp;hierarchy&nbsp;and&nbsp;clarity</p><p>across&nbsp;product&nbsp;pages,&nbsp;dashboards&nbsp;and&nbsp;marketing&nbsp;surfaces.</p><p><br></p><p>This&nbsp;role&nbsp;is&nbsp;not&nbsp;purely&nbsp;visual.&nbsp;The&nbsp;ideal&nbsp;candidate&nbsp;understands&nbsp;product&nbsp;thinking,&nbsp;user&nbsp;flows&nbsp;and</p><p>conversion&nbsp;optimization,&nbsp;and&nbsp;can&nbsp;translate&nbsp;business&nbsp;goals&nbsp;into&nbsp;clean,&nbsp;intuitive&nbsp;interfaces.</p><p><br></p><p>You&nbsp;will&nbsp;collaborate&nbsp;closely&nbsp;with&nbsp;product&nbsp;and&nbsp;development&nbsp;to&nbsp;refine&nbsp;layouts,&nbsp;improve&nbsp;navigation</p><p>clarity&nbsp;and&nbsp;create&nbsp;a&nbsp;more&nbsp;modern,&nbsp;cohesive&nbsp;design&nbsp;system.</p><p><br></p><p><b>Responsibilities</b></p><p>Audit&nbsp;existing&nbsp;TRD&nbsp;Data&nbsp;and&nbsp;website&nbsp;pages&nbsp;for&nbsp;usability&nbsp;and&nbsp;design&nbsp;inconsistencies</p><p>Improve&nbsp;spacing,&nbsp;typography&nbsp;hierarchy&nbsp;and&nbsp;visual&nbsp;clarity</p><p>Redesign&nbsp;key&nbsp;product&nbsp;landing&nbsp;pages&nbsp;and&nbsp;dashboard&nbsp;entry&nbsp;points</p><p>Help&nbsp;simplify&nbsp;navigation&nbsp;and&nbsp;highlight&nbsp;product&nbsp;features&nbsp;more&nbsp;effectively</p><p>Create&nbsp;Figma&nbsp;files&nbsp;that&nbsp;are&nbsp;organized&nbsp;and&nbsp;developer&nbsp;ready</p><p>Establish&nbsp;basic&nbsp;design&nbsp;system&nbsp;guidelines&nbsp;including&nbsp;spacing&nbsp;rules,&nbsp;typography&nbsp;scale&nbsp;and&nbsp;component&nbsp;patterns</p><p>Iterate&nbsp;based&nbsp;on&nbsp;feedback&nbsp;from&nbsp;product&nbsp;leadership</p><p>Suggest&nbsp;UX&nbsp;improvements&nbsp;based&nbsp;on&nbsp;user&nbsp;behavior&nbsp;and&nbsp;engagement&nbsp;patterns</p><p>Provide&nbsp;guidance&nbsp;on&nbsp;improving&nbsp;subscription&nbsp;conversion&nbsp;through&nbsp;layout&nbsp;and&nbsp;messaging</p><p>clarity</p><p><br></p><p><b>Qualifications</b></p><p>4+&nbsp;years&nbsp;experience&nbsp;in&nbsp;UX/UI&nbsp;design</p><p>Strong&nbsp;portfolio&nbsp;demonstrating&nbsp;clean,&nbsp;modern&nbsp;SaaS&nbsp;or&nbsp;data&nbsp;product&nbsp;design</p><p>Experience&nbsp;designing&nbsp;dashboards&nbsp;or&nbsp;data-heavy&nbsp;interfaces</p><p>Strong&nbsp;understanding&nbsp;of&nbsp;layout&nbsp;systems,&nbsp;spacing&nbsp;principles&nbsp;and&nbsp;typography</p><p>Highly&nbsp;proficient&nbsp;in&nbsp;Figma</p><p>Ability&nbsp;to&nbsp;work&nbsp;within&nbsp;an&nbsp;existing&nbsp;brand&nbsp;and&nbsp;improve&nbsp;it&nbsp;without&nbsp;reinventing&nbsp;everything</p><p>Comfortable&nbsp;collaborating&nbsp;with&nbsp;product&nbsp;and&nbsp;engineering&nbsp;teams</p><p><br></p><p><b>Nice&nbsp;to&nbsp;have:</b></p><p>Experience&nbsp;with&nbsp;media,&nbsp;publishing&nbsp;or&nbsp;B2B&nbsp;products</p><p>Familiarity&nbsp;with&nbsp;analytics-driven&nbsp;design&nbsp;decisions</p>\\n<p></p><p><br></p><p></p>\\n<p><b>Who We Are: </b></p><p>&nbsp;</p><p>The Real Deal is the largest real-estate news outlet in the US, reaching millions of professionals daily through our media channels. We have received 60+ awards for editorial excellence over the past six years, including the General Excellence award from the Society of Business Writers and Editors. </p><p>&nbsp;</p><p>Quantcast rates us among the 300-most visited sites in the US and the website with the wealthiest audience and one of the most educated.</p><p>As a publication, The Real Deal is to real estate what Variety is to entertainment or what Politico is to Beltway politics â a plugged-in news outlet that is read by the entire industry. </p><p>&nbsp;</p><p>We are an equal opportunity employer and value diversity at our company. We do not discriminate based on race, religion, color, national origin, gender, sexual orientation, age, marital status, veteran status, or disability status. We partner with our employees to support diversity and inclusion in the workplace and through higher education programs supporting rising journalists.&nbsp;</p><br/><br/>Please mention the word **EXALTATION** and tag RNTguODAuMTQ4Ljk4 when applying to show you read the job post completely (#RNTguODAuMTQ4Ljk4). This is a beta feature to avoid spam applicants. Companies can search these words to find applicants that read this and see they're human.",
+          "location": "Remote",
+          "apply_url": "https://remoteOK.com/remote-jobs/remote-ux-ui-designer-the-real-deal-1130648",
+          "salary_min": 0,
+          "salary_max": 0,
+          "logo": "",
+          "url": "https://remoteOK.com/remote-jobs/remote-ux-ui-designer-the-real-deal-1130648",
+          "title": "UX UI Designer",
+          "source": "RemoteOK"
+        },
+        "score": 9.4,
+        "matched_skills": [
+          "ai"
+        ],
+        "evaluation": {
+          "reason": "關鍵字匹配"
+        }
+      },
+      {
+        "job": {
+          "slug": "remote-staff-accountant-1uphealth-1130646",
+          "id": "1130646",
+          "epoch": 1772737205,
+          "date": "2026-03-05T19:00:05+00:00",
+          "company": "1upHealth",
+          "company_logo": "",
+          "tags": [
+            "accountant",
+            "support",
+            "accounting",
+            "payroll",
+            "financial",
+            "sales",
+            "health",
+            "healthcare",
+            "non tech"
+          ],
+          "description": "<div><h2>About 1upHealth</h2>\n<p>At 1upHealth, we're on a mission to unlock health data and empower the future of healthcare through modern, cloud-native data infrastructure and interoperability. We build a platform that enables payers, providers, and digital health companies to ingest, normalize, and exchange clinical and claims data at scale; securely, reliably, and with strong compliance foundations. We are a remote-first U.S. company with a culture focused on collaboration, transparency, and meaningful impact. &nbsp;</p>\n<p>&nbsp;</p>\n<h3>About the Role</h3>\n<p>The Staff Accountant will support core accounting functions including accounts payable, accounts receivable, general ledger accounting, cash management, and month-end close. This role plays a key part in maintaining accurate financial records, supporting audits and tax preparation, and ensuring timely and reliable accounting processes.&nbsp;The ideal candidate thrives in a startup environment, enjoys improving processes, and is collaborative, proactive, and eager to learn.</p>\n<h3>&nbsp;</h3>\n<h3>Key Responsibilities</h3>\n<ul>\n<li>Prepare bank, credit card, and balance sheet reconciliations and maintain appropriate supporting documentation</li>\n<li>Support monthly, quarterly, and year-end close activities, including preparation of journal entries and supporting schedules</li>\n<li>Maintain close checklists and ensure timely completion of assigned close tasks</li>\n<li>Enter and maintain sales orders based on executed contracts and order forms</li>\n<li>Review customer contracts for billing terms, pricing, billing frequency, and revenue start dates</li>\n<li>Generate and distribute customer invoices accurately and on schedule</li>\n<li>Apply customer payments, reconcile accounts receivable balances, and monitor AR aging</li>\n<li>Assist with collections and respond to customer billing inquiries in coordination with internal teams</li>\n<li>Process vendor invoices, corporate card transactions, and employee expense reports in accordance with company policies</li>\n<li>Manage vendor setup and maintain organized accounts payable documentation</li>\n<li>Assist with payroll and benefits accounting support, including payroll-related journal entries and accruals</li>\n<li>Support audit, tax, and other external requests by compiling schedules, reports, and documentation</li>\n<li>Main<br/><br/>Please mention the word **TROPHY** and tag RNTguODAuMTQ4Ljk4 when applying to show you read the job post completely (#RNTguODAuMTQ4Ljk4). This is a beta feature to avoid spam applicants. Companies can search these words to find applicants that read this and see they're human.",
+          "location": "Remote - US",
+          "apply_url": "https://remoteOK.com/remote-jobs/remote-staff-accountant-1uphealth-1130646",
+          "salary_min": 0,
+          "salary_max": 0,
+          "logo": "",
+          "url": "https://remoteOK.com/remote-jobs/remote-staff-accountant-1uphealth-1130646",
+          "title": "Staff Accountant",
+          "source": "RemoteOK"
+        },
+        "score": 9.4,
+        "matched_skills": [
+          "ai"
+        ],
+        "evaluation": {
+          "reason": "關鍵字匹配"
+        }
+      },
+      {
+        "job": {
+          "slug": "remote-communications-manager-certik-1130643",
+          "id": "1130643",
+          "epoch": 1772722804,
+          "date": "2026-03-05T15:00:04+00:00",
+          "company": "CertiK",
+          "company_logo": "",
+          "tags": [
+            "manager",
+            "web3",
+            "security",
+            "technical",
+            "support",
+            "travel",
+            "lead",
+            "sales",
+            "full-time"
+          ],
+          "description": "<p><b style=\"font-size: 16px;\">About the Company</b></p><p><span style=\"font-size: 16px;\">CertiK is the largest blockchain security auditor and provides a comprehensive suite of tools to secure the industry at scale. To date, CertiK has worked with over 5,000 Enterprise clients, secured over $557 billion worth of digital assets, and has detected over 18,000 vulnerabilities in blockchain code. Our clients include leading projects such as OKX, Tether, Ripple, and Pancakeswap. Our investors include top VCs like Tiger Global, Coatue Management, Shunwei Capital and Hillhouse Capital as well as industry leaders like Coinbase Ventures and Binance.</span></p><p><br></p><p><br></p><p><span style=\"font-size: 16px;\">Investors = Insight Partners, Sequoia, Tiger Global, Coatue Management, Lightspeed, Advent International, SoftBank, Hillhouse Capital, Goldman Sachs, Shunwei Capital, IDG Capital, Wing, Legend Star, Danhua Capital and other investors.</span></p><p><br></p><p><br></p><p><b style=\"font-size: 16px;\">About the Role</b></p><p><span style=\"font-size: 16px;\">CertiK is seeking a US-based Communications Manager to lead media relations and narrative development in the United States.This role will focus on strengthening our presence across mainstream tech, business, cybersecurity, and Web3 media â particularly around security incidents, emerging risks, and data-driven industry insights.The ideal candidate understands how to navigate fast-moving news cycles and position technical security expertise within high-impact media conversations.</span></p><p><br></p><p><b style=\"font-size: 16px;\">Location:</b><span style=\"font-size: 16px;\"> United States (Remote, with travel as needed)</span></p><p><br></p><p><br></p>\\n<p></p><p><br></p><b>Key Responsibilities</b><ul><li>Build and manage relationships with US-based tech, business, cybersecurity, and Web3 journalists</li><li>Lead proactive pitching of company news, research reports, and data insights</li><li>Support rapid-response communications during major hack incidents or market events</li><li>Develop timely commentary and expert positioning opportunities in breaking news cycles</li><li>Coordinate media briefings, interviews, and follow-ups</li><li>Track coverage performance and gather qualitative journalist feedback</li><li>Support on-site media engagement during major industry conferences (e.g., ETH Denver, Consensus)</li><li>Partner with global teams to ensure consistent messaging across markets</li></ul><p><br></p><b>Qualifications</b><ul><li>5+ years of experience in tech PR, communications, or media relations</li><li>Strong relationships with US-based tech, cybersecurity, business, or Web3 media</li><li>Experience managing crisis communications or fast-moving news cycles</li><li>Ability to translate complex technical security topics into clear and compelling narratives</li><li>Experience working with cybersecurity, fintech, blockchain, or other emerging technology companies preferred</li><li>Familiarity with data-driven storytelling and research-based pitching</li></ul><p><br></p><p></p>\\n<div>$90,000 - $120,000 a year</div>\\n<p><b>Compensation:</b> If the role is performed in the US, the target annual compensation is $90,000 - $120,000. The exact compensation at which this job is filled will be determined by the skills and experience of qualified candidates.</p><p><br></p><p>#blockchain</p><p>#startups</p><p>#hiring</p><p><br></p><p>CertiK accepts applications for this position on an ongoing basis.  </p><p><br></p><p>CertiK is proud to offer medical, vision, and dental insurance, 401(k) plan with company matching, life and accidental death and dismemberment insurance, HSA (with high deductible plan), FSA, and other benefits to all full-time employees, along with flexible paid time off and holidays. CertiK also offers a variable commission program for business development sales roles.</p><p><br></p><p>In compliance with federal law, all persons hired will be required to verify identity and eligibility to work in the United States and to complete the required employment eligibility verification form upon hire.</p><p><br></p><p>CertiK is proud to be an equal opportunity employer. We will not discriminate against any applicant or employee on the basis of age, race, color, creed, religion, sex, sexual orientation, gender, gender identity or expression, medical condition, national origin, ancestry, citizenship, marital status or civil partnership/union status, physical or mental disability, pregnancy, childbirth, genetic information, military and veteran status, or any other basis prohibited by applicable federal, state or local law.</p><p><br></p><p>CertiK will consider for employment qualified applicants with criminal histories in a manner consistent with local and federal requirements.</p><p><a rel=\"noopener noreferrer\" class=\"postings-link\" href=\"https://www.eeoc.gov/sites/default/files/migrated_files/employers/poster_screen_reader_optimized.pdf\">https://www.eeoc.gov/sites/default/files/migrated_files/employers/poster_screen_reader_optimized.pdf</a></p><p><br></p><p>All CertiK employees are expected to actively support diversity on their teams, and in the Company.</p><br/><br/>Please mention the word **UPLIFT** and tag RNTguODAuMTQ4Ljk4 when applying to show you read the job post completely (#RNTguODAuMTQ4Ljk4). This is a beta feature to avoid spam applicants. Companies can search these words to find applicants that read this and see they're human.",
+          "location": "US / Remote",
+          "apply_url": "https://remoteOK.com/remote-jobs/remote-communications-manager-certik-1130643",
+          "salary_min": 0,
+          "salary_max": 0,
+          "logo": "",
+          "url": "https://remoteOK.com/remote-jobs/remote-communications-manager-certik-1130643",
+          "title": "Communications Manager",
+          "source": "RemoteOK"
+        },
+        "score": 9.4,
+        "matched_skills": [
+          "ai"
+        ],
+        "evaluation": {
+          "reason": "關鍵字匹配"
+        }
+      },
+      {
+        "job": {
+          "slug": "remote-senior-sales-enablement-program-manager-chownow-1130631",
+          "id": "1130631",
+          "epoch": 1772582480,
+          "date": "2026-03-04T00:01:20+00:00",
+          "company": "ChowNow ",
+          "company_logo": "",
+          "tags": [
+            "manager",
+            "design",
+            "saas",
+            "training",
+            "support",
+            "growth",
+            "director",
+            "voice",
+            "education",
+            "banking",
+            "mobile",
+            "strategy",
+            "lead",
+            "senior",
+            "operations",
+            "marketing",
+            "sales",
+            "go",
+            "health",
+            "recruiting",
+            "recruitment",
+            "executive",
+            "digital nomad"
+          ],
+          "description": "<p><b>About Us:</b></p><p>ChowNow is one of the leading players in off-premise restaurant technology. As takeout becomes a vital revenue stream for independent restaurants, our platform helps owners focus on what they do bestâserving great foodâby offering solutions across the entire digital dining experience. From building branded websites and mobile apps, to powering online orders, managing menus, consolidating delivery, and running targeted marketing, we give restaurants the tools to grow on their own terms.</p><p><br></p><p>We support over <b>20,000 restaurants across North America</b>, helping process <b>$1B+ in gross food sales </b>while saving our partners over <b>$700M in third-party commission fees</b>. Through our white-label ordering solutions, a growing demand network (including Google, Yelp, Apple, and Snap), and a diner-friendly marketplace, we empower independent restaurants to own their customer relationships and avoid inflated pricing and fees charged by 3rd party delivery apps like Uber and Doordash.&nbsp;</p><p><br></p><p>Founded in 2012, weâve navigated rapid growth and transformationâfrom startup roots through the pandemic boomâand are now beginning an exciting new era under our CEO, <b>Kanika Soni</b>. As we evolve with new leadership and cutting-edge tools, weâre deepening our commitment to helping local restaurants thrive in the digital economy.</p><p><br></p><p><b>About the Position:</b></p><p>Weâre looking for a strategic, data-driven Senior Sales Enablement Program Manager to accelerate the performance of our Revenue organization. This role sits at the intersection of Sales, Product, Marketing, and Revenue Operations and is responsible for translating go-to-market strategy into measurable seller behavior change.</p><p><br></p><p>You will lead enablement initiatives that drive revenue impact â including new product launches, pricing and packaging rollouts, everboarding programs, skills development, and process adoption. You wonât just deliver training â youâll design scalable systems that improve execution quality, shorten sales cycles, increase win rates, and elevate seller confidence.</p><p><br></p><p>This is a highly cross-functional, high-visibility role for someone who thrives in fast-moving environments, knows how to influence senior stakeholders, and can connect enablement efforts directly to business outcomes.</p><p><br></p><p>This position will report to our Director of Revenue Enablement. No direct reports.</p><p><br></p><p>This is a remote role based in the United States. <b>Please note:</b> ChowNow is not eligible to employ in every state and the recruiting team will confirm location and eligibility before moving past initial stages.</p><p><br></p><p><b>WHAT WE LOVE ABOUT YOU:</b></p><p><br></p><p><b>You put restaurants first.</b> You deeply understand the importance of local restaurants and put them at the center of everything you do. You aim to help them not only survive but thrive.</p><p><br></p><p><b>You celebrate diversity.</b> You recognize that diversity and inclusivity matter. Youâre committed to progress, which means everyone gets the support and resources they need, no matter who they are.&nbsp; You have an ability to listen to other team members' ideas and can thrive in an environment that embraces individuality. Everyoneâs voice counts.</p><p><br></p><p><b>You raise your hand. </b>You consistently go above and beyond what is asked of you. You help your peers accomplish their tasks while also excelling at accomplishing your own. When you have a smart idea, you raise your hand and share it.</p><p><br></p><p><b>You keep reaching.</b> You set clear ambitious goals. You donât allow yourself to become complacent with where youâre at and what youâve done, so you seek out new opportunities and challenges.</p>\\n<p></p><p><br></p><b>Responsibilities Include:</b><ul><li><b>Drive Product Enablement &amp; Sales Process Execution</b></li><li>Lead end-to-end enablement strategy for new product, pricing, and positioning launchesâpartnering with Product Marketing to translate messaging into talk tracks, demo flows, and competitive positioning</li><li>Build launch certification programs and define measurable adoption metrics (call behaviors, pipeline mix, win rate impact)</li><li>Support rollouts of new sales processes and tooling (e.g., Gong), with enablement assets and reinforcement plans that drive behavior adoption</li><li><b>Build Rep &amp; Manager Development Programs</b></li><li>Design ongoing AE development programs across core selling motions, operationalizing skills frameworks (e.g., MEDDPICC) into repeatable training with structured learning journeys tied to tenure and performance</li><li>Create manager playbooks and coaching tools to inspect call quality, qualification depth, and deal strategyâsupporting coaching cadences that drive measurable lift in win rates</li><li><b>Measure Impact &amp; Partner Strategically</b></li><li>Define success metrics for every initiative, tracking leading indicators (behavior change, certification completion, call quality) and lagging indicators (win rate, ACV, ramp time)</li><li>Serve as a trusted advisor to Sales leadership, aligning enablement priorities to revenue goals and presenting impact insights to executives</li></ul><p><br></p><b>Within 30 days you'll...</b><ul><li>Complete ChowNow New Hire Onboarding Experience&nbsp;</li><li>Build strong relationships with Sales leadership, frontline managers, Marketing, and RevOps</li><li>Audit existing AE enablement programs, onboarding, assets, certifications, and tooling</li><li>Review pipeline metrics, win/loss data, and call recordings to identify execution gaps</li><li>Identify top 3 performance levers impacting AE productivity and begin executing on them</li></ul><p><br></p><b>Within 60 days you'll...</b><ul><li>Roll out and measure at least one high-impact enablement initiative identified</li><li>Build and launch revamped onboarding program</li><li>Launch structured manager coaching scorecards</li><li>Establish an ongoing AE everboarding calendar tied to performance data</li><li>Present early progress and insights to Sales leadership</li></ul><p><br></p><b>Within 90 days you'll...</b><ul><li>Achieve defined adoption metrics for at least one major initiative&nbsp;</li><li>Demonstrate early indicators of revenue impact (improved discovery quality, improved pipeline hygiene, increased attach rate, etc.)</li><li>Finalize and socialize a 6â12 month AE enablement strategy</li></ul><p><br></p><b>You Should Apply If You Have: </b><ul><li>6+ years of experience in Sales Enablement, Revenue Enablement, or Sales Performance roles supporting Account Executives in a SaaS or high-growth technology environment</li><li>A proven track record leading enablement programming lifecycles end to end</li><li>Deep understand of SaaS sales cycles (especially SMB)</li><li>Experience operationalizing discovery and value frameworks into scalable programs (BANT, MEDDPICC, etc)</li><li>Strong data fluency â ability to tie enablement initiatives to measurable business impact (win rate, ACV, pipeline conversion, ramp time, etc.)</li><li>Experience partnering closely with Sales, Product Marketing, RevOps, and frontline Sales Managers</li><li>Experience supporting call coaching platforms (e.g., Gong) and embedding coaching frameworks into manager rhythms</li><li>A demonstrated ability to build structured certification programs and measurable skill validation</li><li>Excellent executive communication skills; comfortable presenting to senior leadership</li><li>Strong organization skills and can lead multiple concurrent initiatives without losing quality or velocity</li></ul><p><br></p><b>About Our Benefits:</b><ul><li><b>Estimated Base Salary:</b> $130,000- $175,000 (depending on candidate location and experience)</li><li>Ongoing training and growth opportunities.</li><li>A \"Best Place to Work\" winner multiple times where we focus on creating a great employee experience.</li><li>Rock solid medical, dental, and vision plans.</li><li>Mental Health Coverage - we offer several programs to support your mental health and wellness goals.</li><li>Unlimited Paid Vacation. We expect you to work hard, but still enjoy your personal life</li><li>7 weeks of baby bonding time for all new parents (within the first year of birth or adoption), 8 Weeks of Paid Pregnancy Leave.</li><li>401(k) Matching</li><li>Employer-contributing student loan assistance program or continuing education reimbursement program </li><li>Employee Stock Incentive Plan.</li><li>Pet insurance for your fur babies</li><li>Consistent &amp; fair leadership: weâll share info, set clear goals, show you respect, and treat everyone fairly.</li><li>Enough freedom to spread your wings while still holding you accountable.</li></ul><p><br></p><p></p>\\n<p>The above statements are intended to describe the general nature and level of work being performed by people assigned to this job. This is not intended to be an exhaustive list of all responsibilities, duties and skills required.</p><p><br></p><p>As one of ChowNowâs core values, âCelebrates Diversityâ, we are committed to an inclusive and diverse work environment. ChowNow is an equal opportunity employer. We do not discriminate based on race, color, ethnicity, ancestry, national origin, religion, sex, gender, gender identity, gender expression, sexual orientation, age, disability, veteran status, genetic information, marital status or any legally protected status.&nbsp; We are committed to developing a barrier-free recruitment process and work environment, if you require any accommodation, please let us know at your earliest convenience and weâll work with you to meet your accessibility needs.</p><p><br></p><p><b>Information Regarding Recruiting Scams:</b> ChowNow does not engage in outreach to prospective candidates by text message about employment opportunities, interviews, or employment offers, and we do not make job offers after only one interview. ChowNow does not ask candidates to submit sensitive personal information (Passport details, banking information, etc.) as part of the interview process. ChowNow employment offers are made by a ChowNow Talent Acquisition team member with a @chownow.com email address only. ChowNow does not ask candidates to provide funds to the company for onboarding, equipment, or supplies. If you receive an employment inquiry or employment offer from a non @chownow.com email address, consider it spam.&nbsp;&nbsp;</p><p><br></p><p>Read <a rel=\"noopener noreferrer\" class=\"postings-link\" href=\"https://get.chownow.com/california-privacy-rights-act/\">here</a> about your California privacy rights.</p><p>&nbsp;</p><p>#Li-Remote</p><br/><br/>Please mention the word **LUXURIANT** and tag RNTguODAuMTQ4Ljk4 when applying to show you read the job post completely (#RNTguODAuMTQ4Ljk4). This is a beta feature to avoid spam applicants. Companies can search these words to find applicants that read this and see they're human.",
+          "location": "Remote",
+          "apply_url": "https://remoteOK.com/remote-jobs/remote-senior-sales-enablement-program-manager-chownow-1130631",
+          "salary_min": 0,
+          "salary_max": 0,
+          "logo": "",
+          "url": "https://remoteOK.com/remote-jobs/remote-senior-sales-enablement-program-manager-chownow-1130631",
+          "title": "Senior Sales Enablement Program Manager",
+          "source": "RemoteOK"
+        },
+        "score": 9.4,
+        "matched_skills": [
+          "ai"
+        ],
+        "evaluation": {
+          "reason": "關鍵字匹配"
+        }
+      },
+      {
+        "job": {
+          "slug": "remote-loan-officer-figure-1130625",
+          "id": "1130625",
+          "epoch": 1772582408,
+          "date": "2026-03-04T00:00:08+00:00",
+          "company": "Figure",
+          "company_logo": "",
+          "tags": [
+            "support",
+            "financial",
+            "finance",
+            "fintech",
+            "strategy",
+            "operations",
+            "non tech"
+          ],
+          "description": "<div><p><strong>About Figure</strong></p>\n<p>Figure (NASDAQ: FIGR) is transforming capital markets through blockchain. We're proving that blockchain isn't just theory - it's powering real products used by hundreds of thousands of consumers and institutions.&nbsp;</p>\n<p>By combining blockchain's transparency and efficiency with AI-driven automation, we've reimagined how loans are originated, funded, and traded in secondary markets. From faster processing times to lower costs and reduced bias, our technology is helping borrowers, investors, and financial institutions achieve better outcomes.</p>\n<p>Together with our 170+ partners, we've originated over $17 billion in home equity loans (HELOCs) on our blockchain-native platform, making Figure the largest non-bank provider of home equity financing in the U.S. Figure's ecosystem also includes YLDS, an SEC-registered yield-bearing stablecoin that operates as a tokenized money market fund, and several other products and platforms that are reshaping consumer finance and capital markets.&nbsp;</p>\n<p>We're proud to be recognized as one of <a href=\"https://www.forbes.com/lists/fintech50/\">Forbes' Most Innovative Fintech Startups in 2025</a> and <a href=\"https://www.fastcompany.com/91269557/finance-personal-finance-most-innovative-companies-2025\">Fast Company's Most Innovative Companies in Finance and Personal Finance</a>.</p>\n<p><strong>About the Role</strong></p>\n<p>We're seeking candidates for the Loan Officer role to join our dynamic Operations organization! You'll be a critical contributor to our loan origination strategy as you support borrowers sourced via our direct-to-consumer, marketing, and partnerships efforts.</p>\n<p>The Loan Officer will engage with customers, educate them on financing options and loan products, and ensure a positive experience for all borrowers. You'll thrive in this role if you're obsessed with driving results and creating phenomenal customer experiences.</p>\n<p><strong>What You'll Do</strong></p>\n<ul>\n<li>Convert a high volume of company-provided leads into happy Figure HELOC customers</li>\n<li>Connect with prospective borrowers via outbound calling initiatives, text message, and email</li>\n<li>Guide clients through their loan borr</ul></div><br/><br/>Please mention the word **BRILLIANTLY** and tag RNTguODAuMTQ4Ljk4 when applying to show you read the job post completely (#RNTguODAuMTQ4Ljk4). This is a beta feature to avoid spam applicants. Companies can search these words to find applicants that read this and see they're human.",
+          "location": "Remote",
+          "apply_url": "https://remoteOK.com/remote-jobs/remote-loan-officer-figure-1130625",
+          "salary_min": 0,
+          "salary_max": 0,
+          "logo": "",
+          "url": "https://remoteOK.com/remote-jobs/remote-loan-officer-figure-1130625",
+          "title": "Loan Officer",
+          "source": "RemoteOK"
+        },
+        "score": 9.4,
+        "matched_skills": [
+          "ai"
+        ],
+        "evaluation": {
+          "reason": "關鍵字匹配"
+        }
+      },
+      {
+        "job": {
+          "slug": "remote-data-engineer-mento-1130606",
+          "id": "1130606",
+          "epoch": 1772553607,
+          "date": "2026-03-03T16:00:07+00:00",
+          "company": "Mento",
+          "company_logo": "",
+          "tags": [
+            "embedded",
+            "growth",
+            "analytics",
+            "engineer",
+            "engineering"
+          ],
+          "description": "<div><h3><strong>About Mento</strong></h3>\n<p>Mento is a career technology company that helps people be exceptional and thrive at work through human, AI, and software-based coaching. We're on a mission to provide people access to the best support, advice, and mentorship at work and empower them to take action on it. In a world where jobs and careers are rapidly changing, we believe that transformational growth and continuous improvement is mandatory for people and companies to thrive. We are on a mission to bring our unique model of coaching to every member of the global workforce.</p>\n<p>We strive to create a fun, conscientious, collaborative, and supportive work environment. We are a US-based, remote-first company, backed by leading VCs and angel investors.&nbsp;</p>\n<h3><strong>About The Role</strong></h3>\n<p>We're looking for our first Data Engineer to build the data infrastructure that powers insights and features across our coaching platform. You'll own data pipelines for coaching sessions, user analytics, and business operations, while establishing the foundation for our data architecture.</p>\n<p>This is not purely about business analytics - In this role, you'll join our engineering team and work closely with product, engineering, coaching, and leadership teams. You'll be embedded in product developmentâunderstanding feature requirements, instrumenting data collection, and building systems that power product capabilities.&nbsp;</p>\n<h3><strong>Key Responsibilities:</strong></h3>\n<p>Build data pipelines for coaching and user analytics. You'll create pipelines that process coaching session data, user interactions, and AI-generated outputs. These pipelines will power everything from product analytics to coaching effectiveness metrics to business intelligence dashboards.</p>\n<p>Build data systems that power product features. You'll create data pipelines that feed back into the productâuser progress tracking, coaching insights, customer dashboards, and more. You'll work with product and engineering to understand what data products need and build reliable systems to deliver it.</p>\n<p>Establish our data infrastructure and architecture. As our first data engineer, you'll make key decisions about our data st</p></div><br/><br/>Please mention the word **SPRIGHTLY** and tag RNTguODAuMTQ4Ljk4 when applying to show you read the job post completely (#RNTguODAuMTQ4Ljk4). This is a beta feature to avoid spam applicants. Companies can search these words to find applicants that read this and see they're human.",
+          "location": "Remote",
+          "apply_url": "https://remoteOK.com/remote-jobs/remote-data-engineer-mento-1130606",
+          "salary_min": 0,
+          "salary_max": 0,
+          "logo": "",
+          "url": "https://remoteOK.com/remote-jobs/remote-data-engineer-mento-1130606",
+          "title": "Data Engineer",
+          "source": "RemoteOK"
+        },
+        "score": 9.4,
+        "matched_skills": [
+          "ai"
+        ],
+        "evaluation": {
+          "reason": "關鍵字匹配"
+        }
+      }
+    ]
   }
 ]
