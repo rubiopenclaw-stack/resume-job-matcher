@@ -87,7 +87,7 @@ def markdown_to_html(markdown: str) -> str:
 
 def send_match_report(resume: Dict, matched_jobs: List[Dict], to: str) -> bool:
     """發送匹配報告"""
-    from matcher import generate_email_content, get_summary_stats
+    from src.matcher import generate_email_content, get_summary_stats
     
     name = resume.get('name', '求職者')
     stats = get_summary_stats(matched_jobs)
@@ -106,7 +106,7 @@ def send_match_report(resume: Dict, matched_jobs: List[Dict], to: str) -> bool:
 
 def send_digest_email(resumes: List[Dict], jobs: List[Dict], to: str) -> bool:
     """發送匯總郵件（多個履歷）"""
-    from matcher import match_jobs, generate_email_content
+    from src.matcher import match_jobs, generate_email_content
     
     all_content = "# 🎯 每日職缺匹配報告\n\n"
     

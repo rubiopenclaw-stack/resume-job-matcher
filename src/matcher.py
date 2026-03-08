@@ -113,14 +113,14 @@ def match_jobs(resume: Dict, jobs: List[Dict], top_n: int = 10) -> List[Dict]:
     filtered_jobs = filter_by_preference(resume, jobs)
     
     matched_jobs = []
-    
+
     for job in filtered_jobs:
         score = calculate_match_score(resume_skills, job)
-        
+
         if score > 0.05:  # 最低門檻
-            matched_skills = [s for s in resume_skills if s.lower() in 
-                            f"{job.get('title', '')} {job.get('description', '')} {' '.join(job.get('tags', []))}".lower()]
-            
+            job_text = f"{job.get('title', '')} {job.get('description', '')} {' '.join(job.get('tags', []))}".lower()
+            matched_skills = [s for s in resume_skills if s.lower() in job_text]
+
             matched_jobs.append({
                 'job': job,
                 'score': round(score * 100, 1),
