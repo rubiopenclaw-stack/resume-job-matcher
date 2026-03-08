@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 function App() {
   const [jobs, setJobs] = useState([])
@@ -6,8 +6,10 @@ function App() {
   const [sources, setSources] = useState([])
   const [activeTab, setActiveTab] = useState('jobs')
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [selectedSource, setSelectedSource] = useState('')
   const [loading, setLoading] = useState(true)
+  const debounceTimer = useRef(null)
 
   // 載入收藏
   useEffect(() => {
@@ -30,13 +32,22 @@ function App() {
       .catch(console.error)
   }, [])
 
+  // Debounce 搜尋輸入
+  useEffect(() => {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current)
+    debounceTimer.current = setTimeout(() => {
+      setDebouncedSearch(search)
+    }, 300)
+    return () => clearTimeout(debounceTimer.current)
+  }, [search])
+
   // 取得職缺列表
   useEffect(() => {
     setLoading(true)
     let url = '/api/jobs?limit=50'
-    if (search) url += `&search=${encodeURIComponent(search)}`
+    if (debouncedSearch) url += `&search=${encodeURIComponent(debouncedSearch)}`
     if (selectedSource) url += `&source=${encodeURIComponent(selectedSource)}`
-    
+
     fetch(url)
       .then(res => res.json())
       .then(data => {
@@ -47,7 +58,7 @@ function App() {
         console.error(err)
         setLoading(false)
       })
-  }, [search, selectedSource])
+  }, [debouncedSearch, selectedSource])
 
   const toggleFavorite = (job) => {
     const isFav = favorites.some(f => f.id === job.id)

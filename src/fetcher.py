@@ -125,12 +125,10 @@ class JustRemoteAdapter(JobSourceAdapter):
 class JobFetcher:
     """職缺獲取器工廠"""
     
-    # 可用的來源適配器
+    # 可用的來源適配器（只保留有效的）
     ADAPTERS: Dict[str, JobSourceAdapter] = {
         'RemoteOK': RemoteOKAdapter(),
         'Remotive': RemotiveAdapter(),
-        'remote4me': Remote4MeAdapter(),
-        'JustRemote': JustRemoteAdapter(),
     }
     
     @classmethod

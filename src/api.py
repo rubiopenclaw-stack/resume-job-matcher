@@ -122,18 +122,18 @@ async def get_jobs(
     
     jobs, cached_at = get_jobs_cache()
     
-    # 搜尋過濾 (改善版本)
+    # 來源過濾（先套用，再搜尋）
+    if source:
+        jobs = [j for j in jobs if j.get('source') == source]
+
+    # 地點過濾
+    if location:
+        location_lower = location.lower()
+        jobs = [j for j in jobs if location_lower in j.get('location', '').lower()]
+
+    # 搜尋過濾
     if search:
         jobs = search_jobs(jobs, search)
-    else:
-        # 來源過濾
-        if source:
-            jobs = [j for j in jobs if j.get('source') == source]
-        
-        # 地點過濾
-        if location:
-            location_lower = location.lower()
-            jobs = [j for j in jobs if location_lower in j.get('location', '').lower()]
     
     # 限制數量
     jobs = jobs[:limit]
