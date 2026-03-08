@@ -1,20 +1,25 @@
-# Resume Job Matcher
+# 職缺獵人 (Resume Job Matcher)
 
 🤖 AI-powered resume to job matching with daily Telegram notifications.
 
 ## 功能特色
 
-- 📡 **多來源職缺** - RemoteOK + remote4me
+- 📡 **多來源職缺** - RemoteOK + Remotive
 - 🧠 **AI 智能評估** - GPT 分析匹配原因、優勢、缺口
 - ⚖️ **加權匹配演算法** - 根據技能權重計算匹配度
 - 🔍 **偏好過濾** - 根據角色、地點偏好篩選
 - 📱 **Telegram 推送** - 每日自動發送到手機
+- ⚡ **快速回應** - 記憶體快取 (10分鐘 TTL)
+- 🎯 **權重搜尋** - 智慧搜尋演算法
 
-## 工作流程
+## 技術棧
 
-```
-履歷解析 → 多來源抓取 → 偏好過濾 → AI 評估 → Telegram 推送
-```
+| 層面 | 技術 |
+|------|------|
+| 前端 | React + Vite |
+| 後端 | FastAPI (Python) |
+| 職缺來源 | RemoteOK, Remotive |
+| 資料格式 | JSON |
 
 ## 快速開始
 
@@ -57,45 +62,154 @@ Actions → Match Jobs Daily → Run workflow
 
 ---
 
+## 🖥️ 本地開發
+
+### 後端 (FastAPI)
+
+```bash
+# 進入專案目錄
+cd resume-job-matcher
+
+# 啟動虛擬環境
+source .venv/bin/activate
+
+# 啟動 API 伺服器
+python -m src.api
+```
+
+API 伺服器會在 `http://localhost:8000` 啟動
+
+### 前端 (React + Vite)
+
+```bash
+# 進入 UI 目錄
+cd resume-job-matcher/ui
+
+# 安裝依賴 (首次)
+npm install
+
+# 啟動開發伺服器
+npm run dev
+```
+
+前端會在 `http://localhost:5173` 啟動
+
+### 完整工作流程
+
+```bash
+# 終端機 1 - 啟動後端
+cd resume-job-matcher
+source .venv/bin/activate
+python -m src.api
+
+# 終端機 2 - 啟動前端
+cd resume-job-matcher/ui
+npm run dev
+```
+
+然後在瀏覽器打開 `http://localhost:5173`
+
+---
+
+## API 端點
+
+### 職缺相關
+
+| 方法 | 端點 | 說明 |
+|------|------|------|
+| GET | `/api/jobs` | 取得職缺列表 (支援搜尋/篩選) |
+| GET | `/api/jobs/sources` | 取得所有來源 |
+| GET | `/api/jobs/locations` | 取得所有地點 |
+| GET | `/api/jobs/tags` | 取得熱門技能標籤 |
+| POST | `/api/jobs/refresh` | 手動觸發職缺重新整理 |
+
+### 查詢參數
+
+| 參數 | 類型 | 說明 |
+|------|------|------|
+| `search` | string | 搜尋關鍵字 (title/company/tags/description) |
+| `source` | string | 篩選來源 (RemoteOK, Remotive) |
+| `location` | string | 篩選地點 |
+| `limit` | int | 回傳數量限制 (預設 50) |
+| `refresh` | bool | 強制重新整理快取 |
+
+### 健康檢查
+
+| 方法 | 端點 | 說明 |
+|------|------|------|
+| GET | `/api/health` | API 健康狀態 |
+
+### 範例請求
+
+```bash
+# 取得所有職缺
+curl http://localhost:8000/api/jobs
+
+# 搜尋 Python 職缺
+curl "http://localhost:8000/api/jobs?search=python"
+
+# 篩選特定來源
+curl "http://localhost:8000/api/jobs?source=RemoteOK"
+
+# 強制刷新快取
+curl -X POST "http://localhost:8000/api/jobs/refresh"
+```
+
+---
+
+## 最新功能
+
+### ⚡ 記憶體快取
+
+- 10 分鐘 TTL (Time To Live)
+- API 回應快速穩定
+- 支援手動清除快取
+
+### 🎯 權重搜尋
+
+搜尋結果會根據匹配位置給予不同權重：
+
+| 欄位 | 權重 |
+|------|------|
+| title (標題) | 10 分 (開頭額外 +5) |
+| company (公司) | 8 分 |
+| tags (技能標籤) | 3 分 |
+| description (描述) | 1 分 |
+
+---
+
 ## 架構
 
 ```
-src/
-├── parser.py          # 履歷解析
-├── fetcher.py        # 多來源職缺抓取
-├── matcher.py        # 加權匹配演算法
-├── ai_evaluator.py   # AI 評估
-└── main.py           # 主程式
+resume-job-matcher/
+├── src/                    # 後端程式碼
+│   ├── api.py             # FastAPI 伺服器
+│   ├── fetcher.py         # 職缺抓取 (RemoteOK + Remotive)
+│   ├── matcher.py         # 匹配演算法
+│   ├── parser.py          # 履歷解析
+│   └── main.py           # 主程式
+├── ui/                     # 前端程式碼 (React + Vite)
+│   ├── src/
+│   │   └── App.jsx       # React 主元件
+│   ├── index.html
+│   └── vite.config.js
+├── resumes/                # 履歷存放
+├── jobs/                   # 職缺資料
+└── data/                   # 執行數據
 ```
 
-## 🖥️ 本地 UI 測試
-
-### 安裝與運行
-
-```bash
-# 安裝依賴
-pip install -r requirements.txt
-
-# 啟動 UI
-streamlit run ui/app.py
-```
-
-### UI 功能
-
-- 📄 履歷管理 - 選擇/查看履歷
-- 🔄 職缺刷新 - 從多來源抓取
-- 🔍 匹配測試 - 測試匹配效果
-- 🤖 AI 評估 - 開啟 AI 分析
-- 📊 結果展示 - 詳細匹配資訊
+---
 
 ## 匹配演算法
 
 ### 技能權重
+
 - **高權重** (3-4x): AI/ML, LLM, Agent, LangChain, RAG
 - **中權重** (2x): Python, JavaScript, React, AWS, Docker
 - **基本權重** (1x): SQL, 其他基礎技能
 
 ### 偏好過濾
+
 - 根據 `preferred_roles` 過濾職缺類型
 - 根據 `preferred_locations` 過濾地點
 - Remote 職缺永遠保留
