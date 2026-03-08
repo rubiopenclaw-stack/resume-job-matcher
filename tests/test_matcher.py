@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 import pytest
 from src.matcher import (
+    build_job_text,
     calculate_match_score,
     filter_by_preference,
     match_jobs,
@@ -335,3 +336,71 @@ class TestSkillWeights:
     def test_all_weights_positive(self):
         for skill, weight in SKILL_WEIGHTS.items():
             assert weight > 0, f"Skill '{skill}' has non-positive weight: {weight}"
+
+
+# ===== Tests: build_job_text =====
+
+class TestBuildJobText:
+
+    def test_returns_string(self):
+        job = {'title': 'Python Dev', 'description': 'Uses python', 'tags': ['python']}
+        result = build_job_text(job)
+        assert isinstance(result, str)
+
+    def test_output_is_lowercase(self):
+        job = {'title': 'Python DEV', 'description': 'Uses DJANGO', 'tags': ['REACT']}
+        result = build_job_text(job)
+        assert result == result.lower()
+
+    def test_includes_title(self):
+        job = {'title': 'AI Engineer', 'description': '', 'tags': []}
+        result = build_job_text(job)
+        assert 'ai engineer' in result
+
+    def test_includes_description(self):
+        job = {'title': '', 'description': 'Build LLM agents', 'tags': []}
+        result = build_job_text(job)
+        assert 'llm agents' in result
+
+    def test_includes_tags(self):
+        job = {'title': '', 'description': '', 'tags': ['Python', 'FastAPI']}
+        result = build_job_text(job)
+        assert 'python' in result
+        assert 'fastapi' in result
+
+    def test_missing_fields_handled_gracefully(self):
+        result = build_job_text({})
+        assert isinstance(result, str)
+
+    def test_result_matches_calculate_match_score_internal(self):
+        """Passing pre-built job_text to calculate_match_score should give same result."""
+        job = {'title': 'Python Developer', 'description': 'Python and Django', 'tags': ['python']}
+        skills = ['Python', 'Django']
+        score_auto = calculate_match_score(skills, job)
+        job_text = build_job_text(job)
+        score_prebuilt = calculate_match_score(skills, job, job_text=job_text)
+        assert score_auto == score_prebuilt
+
+
+# ===== Tests: calculate_match_score with pre-built job_text =====
+
+class TestCalculateMatchScoreWithJobText:
+
+    def test_prebuilt_text_matches_auto_computation(self):
+        job = {'title': 'ML Engineer', 'description': 'machine learning python', 'tags': ['ml', 'python']}
+        skills = ['Python', 'ML']
+        auto_score = calculate_match_score(skills, job)
+        prebuilt_score = calculate_match_score(skills, job, job_text=build_job_text(job))
+        assert auto_score == prebuilt_score
+
+    def test_custom_job_text_overrides_job_fields(self):
+        """When job_text is provided, it should be used for matching, not job fields."""
+        job = {'title': 'Java Developer', 'description': 'Java spring', 'tags': ['java']}
+        custom_text = 'python fastapi langchain developer'
+        score = calculate_match_score(['Python', 'LangChain'], job, job_text=custom_text)
+        assert score > 0  # matches custom text, not job fields
+
+    def test_none_job_text_falls_back_to_auto(self):
+        job = {'title': 'React Dev', 'description': 'React TypeScript', 'tags': ['react']}
+        score = calculate_match_score(['react'], job, job_text=None)
+        assert score > 0

@@ -320,3 +320,49 @@ class TestSaveLoadJobs:
         loaded = load_jobs(filepath)
         assert loaded[0]['id'] == 'xyz'
         assert loaded[0]['title'] == 'My Job'
+
+    def test_load_jobs_refetches_when_cache_expired(self, tmp_path):
+        """load_jobs should call fetch_all_jobs when the file is older than 6 hours."""
+        from unittest.mock import patch
+        from datetime import datetime, timedelta
+
+        filepath = str(tmp_path / 'latest.json')
+        jobs = [{'id': '1', 'title': 'Old Job', 'source': 'Test'}]
+        save_jobs(jobs, filepath)
+
+        # Simulate cache being 7 hours old
+        old_time = datetime.now() - timedelta(hours=7)
+        new_jobs = [{'id': '2', 'title': 'Fresh Job', 'source': 'Test'}]
+
+        with patch('src.fetcher.datetime') as mock_dt:
+            mock_dt.now.return_value = datetime.now()
+            mock_dt.fromisoformat.return_value = old_time
+            with patch('src.fetcher.fetch_all_jobs', return_value=new_jobs) as mock_fetch:
+                loaded = load_jobs(filepath)
+                mock_fetch.assert_called_once()
+
+    def test_load_jobs_uses_cache_when_fresh(self, tmp_path):
+        """load_jobs should NOT call fetch_all_jobs when the file is fresh."""
+        from unittest.mock import patch
+
+        filepath = str(tmp_path / 'latest.json')
+        jobs = [{'id': '1', 'title': 'Fresh Job', 'source': 'Test'}]
+        save_jobs(jobs, filepath)
+
+        with patch('src.fetcher.fetch_all_jobs') as mock_fetch:
+            loaded = load_jobs(filepath)
+            mock_fetch.assert_not_called()
+        assert len(loaded) == 1
+
+    def test_load_jobs_fetches_when_file_missing(self, tmp_path):
+        """load_jobs should call fetch_all_jobs when file does not exist."""
+        from unittest.mock import patch
+
+        filepath = str(tmp_path / 'missing.json')
+        new_jobs = [{'id': '99', 'title': 'New Job', 'source': 'Test'}]
+
+        with patch('src.fetcher.fetch_all_jobs', return_value=new_jobs) as mock_fetch:
+            loaded = load_jobs(filepath)
+            mock_fetch.assert_called_once()
+        assert len(loaded) == 1
+        assert loaded[0]['id'] == '99'

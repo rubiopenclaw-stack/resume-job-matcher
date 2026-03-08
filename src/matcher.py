@@ -36,16 +36,22 @@ SKILL_WEIGHTS = {
 }
 
 
-def calculate_match_score(resume_skills: List[str], job: Dict) -> float:
+def build_job_text(job: Dict) -> str:
+    """建立職缺文字（用於匹配）"""
+    return f"{job.get('title', '')} {job.get('description', '')} {' '.join(job.get('tags', []))}".lower()
+
+
+def calculate_match_score(resume_skills: List[str], job: Dict, job_text: str = None) -> float:
     """計算加權匹配分數"""
-    job_text = f"{job.get('title', '')} {job.get('description', '')} {' '.join(job.get('tags', []))}".lower()
-    
+    if job_text is None:
+        job_text = build_job_text(job)
+
     total_weight = 0
     matched_weight = 0
-    
+
     for skill in resume_skills:
         skill_lower = skill.lower()
-        
+
         # 檢查是否有權重（先直接查找，再做子字串掃描）
         weight = SKILL_WEIGHTS.get(skill_lower)
         if weight is None:
@@ -55,23 +61,23 @@ def calculate_match_score(resume_skills: List[str], job: Dict) -> float:
                     break
             else:
                 weight = 1
-        
+
         total_weight += weight
-        
+
         if skill_lower in job_text:
             matched_weight += weight
-    
+
     if total_weight == 0:
         return 0.0
-    
+
     score = matched_weight / total_weight
-    
+
     # 標題加成
     title = job.get('title', '').lower()
     for skill in resume_skills:
         if skill.lower() in title:
             score += 0.15
-    
+
     return min(score, 1.0)
 
 
@@ -115,10 +121,10 @@ def match_jobs(resume: Dict, jobs: List[Dict], top_n: int = 10) -> List[Dict]:
     matched_jobs = []
 
     for job in filtered_jobs:
-        score = calculate_match_score(resume_skills, job)
+        job_text = build_job_text(job)
+        score = calculate_match_score(resume_skills, job, job_text=job_text)
 
         if score > 0.05:  # 最低門檻
-            job_text = f"{job.get('title', '')} {job.get('description', '')} {' '.join(job.get('tags', []))}".lower()
             matched_skills = [s for s in resume_skills if s.lower() in job_text]
 
             matched_jobs.append({
