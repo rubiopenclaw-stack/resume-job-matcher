@@ -4,6 +4,8 @@ AI 評估器 - 增強版
 
 import os
 import json
+import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List, Optional
 
 try:
@@ -75,15 +77,12 @@ def evaluate_match_with_ai(resume: Dict, job: Dict, model: str = None) -> Dict:
         )
         
         content = response.choices[0].message.content.strip()
-        
-        # 清理 JSON
-        for marker in ['```json', '```', 'json']:
-            if content.startswith(marker):
-                content = content[len(marker):].strip()
-            if content.endswith(marker):
-                content = content[:-len(marker)].strip()
-        
-        result = json.loads(content)
+
+        # 用 regex 擷取第一個 JSON 物件，容錯 markdown code block
+        match = re.search(r'\{.*\}', content, re.DOTALL)
+        if not match:
+            raise json.JSONDecodeError("No JSON object found", content, 0)
+        result = json.loads(match.group())
         
         return {
             'reason': result.get('match_reason', ''),
@@ -101,18 +100,26 @@ def evaluate_match_with_ai(resume: Dict, job: Dict, model: str = None) -> Dict:
 
 
 def evaluate_batch(resume: Dict, jobs: List[Dict], top_n: int = 5) -> List[Dict]:
-    """批量評估"""
-    results = []
-    
-    for job in jobs[:top_n * 2]:
+    """批量評估 (並行版)"""
+    candidates = jobs[:top_n * 2]
+
+    def _evaluate_one(job):
         evaluation = evaluate_match_with_ai(resume, job)
-        
-        results.append({
+        return {
             'job': job,
             'evaluation': evaluation,
-            'ai_score': evaluation.get('ai_score') or 0
-        })
-    
+            'ai_score': evaluation.get('ai_score') or 0,
+        }
+
+    results = []
+    with ThreadPoolExecutor(max_workers=min(len(candidates), 5)) as executor:
+        futures = [executor.submit(_evaluate_one, job) for job in candidates]
+        for future in as_completed(futures):
+            try:
+                results.append(future.result())
+            except Exception as e:
+                print(f"evaluate_batch error: {e}")
+
     results.sort(key=lambda x: x['ai_score'], reverse=True)
     return results[:top_n]
 
