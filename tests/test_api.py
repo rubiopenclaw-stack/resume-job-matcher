@@ -125,6 +125,9 @@ class TestGetJobsEndpoint:
     def test_get_jobs_response_structure(self, client):
         data = client.get('/api/jobs').json()
         assert 'count' in data
+        assert 'total' in data
+        assert 'offset' in data
+        assert 'limit' in data
         assert 'jobs' in data
         assert 'cache_age_minutes' in data
 
@@ -347,3 +350,49 @@ class TestSalaryFiltering:
         """Without salary filters, all jobs are returned"""
         data = client.get('/api/jobs').json()
         assert data['count'] == len(SAMPLE_JOBS)
+
+
+# ===== Tests: Pagination (offset) =====
+
+class TestPagination:
+
+    def test_offset_zero_returns_from_start(self, client):
+        data = client.get('/api/jobs?offset=0').json()
+        assert data['offset'] == 0
+        assert data['count'] == len(SAMPLE_JOBS)
+
+    def test_offset_skips_items(self, client):
+        all_data = client.get('/api/jobs').json()
+        all_ids = [j['id'] for j in all_data['jobs']]
+
+        data = client.get('/api/jobs?offset=1').json()
+        page_ids = [j['id'] for j in data['jobs']]
+        # First item is skipped
+        assert all_ids[1] == page_ids[0]
+
+    def test_offset_beyond_total_returns_empty(self, client):
+        data = client.get(f'/api/jobs?offset={len(SAMPLE_JOBS) + 100}').json()
+        assert data['count'] == 0
+        assert data['jobs'] == []
+
+    def test_total_reflects_full_count(self, client):
+        data = client.get('/api/jobs?limit=1').json()
+        assert data['total'] == len(SAMPLE_JOBS)
+        assert data['count'] == 1
+
+    def test_total_with_filter_reflects_filtered_count(self, client):
+        data = client.get('/api/jobs?source=RemoteOK&limit=1').json()
+        # 2 RemoteOK jobs exist; total=2, count=1
+        assert data['total'] == 2
+        assert data['count'] == 1
+
+    def test_limit_and_offset_combined(self, client):
+        data = client.get('/api/jobs?limit=1&offset=1').json()
+        assert data['count'] <= 1
+        assert data['offset'] == 1
+        assert data['limit'] == 1
+
+    def test_response_includes_limit_and_offset(self, client):
+        data = client.get('/api/jobs?limit=10&offset=0').json()
+        assert data['limit'] == 10
+        assert data['offset'] == 0

@@ -6,6 +6,7 @@ FastAPI Server - 職缺獵人 API (優化版)
 """
 
 import json
+from collections import Counter
 from pathlib import Path
 from datetime import datetime, timedelta
 from functools import lru_cache
@@ -14,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, List, Dict
 import threading
 
-app = FastAPI(title="職缺獵人 API", version="1.1.0")
+app = FastAPI(title="職缺獵人 API", version="1.2.0")
 
 # CORS 允許 React 開發伺服器
 app.add_middleware(
@@ -114,7 +115,8 @@ async def get_jobs(
     location: Optional[str] = Query(None, description="篩選地點"),
     salary_min: Optional[int] = Query(None, description="最低薪資過濾"),
     salary_max: Optional[int] = Query(None, description="最高薪資過濾"),
-    limit: int = Query(50, description="回傳數量限制"),
+    limit: int = Query(50, ge=1, le=200, description="回傳數量限制"),
+    offset: int = Query(0, ge=0, description="分頁偏移量"),
     refresh: bool = Query(False, description="強制重新整理快取")
 ):
     """取得職缺列表 (含快取)"""
@@ -143,14 +145,20 @@ async def get_jobs(
     if search:
         jobs = search_jobs(jobs, search)
 
-    # 限制數量
-    jobs = jobs[:limit]
+    # 計算總數（分頁前）
+    total = len(jobs)
+
+    # 分頁
+    jobs = jobs[offset:offset + limit]
 
     # 計算快取年齡
     cache_age = (datetime.now() - cached_at).seconds // 60
 
     return {
+        "total": total,
         "count": len(jobs),
+        "offset": offset,
+        "limit": limit,
         "cache_age_minutes": cache_age,
         "jobs": jobs
     }
@@ -176,12 +184,12 @@ async def get_locations():
 async def get_tags():
     """取得熱門技能標籤"""
     jobs, _ = get_jobs_cache()
-    from collections import Counter
     all_tags = []
     for job in jobs:
         all_tags.extend(job.get('tags', [])[:5])
     tag_counts = Counter(all_tags)
     return {"tags": [tag for tag, _ in tag_counts.most_common(20)]}
+
 
 
 @app.post("/api/jobs/refresh")
