@@ -396,3 +396,47 @@ class TestPagination:
         data = client.get('/api/jobs?limit=10&offset=0').json()
         assert data['limit'] == 10
         assert data['offset'] == 0
+
+
+# ===== Tests: POST /api/jobs/refresh =====
+
+class TestRefreshEndpoint:
+
+    def test_refresh_returns_200_on_success(self, client):
+        mock_jobs = SAMPLE_JOBS.copy()
+        with patch('src.fetcher.fetch_all_jobs', return_value=mock_jobs):
+            with patch('src.fetcher.save_jobs'):
+                response = client.post('/api/jobs/refresh')
+                assert response.status_code == 200
+
+    def test_refresh_response_has_status_and_count(self, client):
+        mock_jobs = SAMPLE_JOBS.copy()
+        with patch('src.fetcher.fetch_all_jobs', return_value=mock_jobs):
+            with patch('src.fetcher.save_jobs'):
+                data = client.post('/api/jobs/refresh').json()
+                assert 'status' in data
+                assert 'count' in data
+
+    def test_refresh_status_is_success(self, client):
+        mock_jobs = SAMPLE_JOBS.copy()
+        with patch('src.fetcher.fetch_all_jobs', return_value=mock_jobs):
+            with patch('src.fetcher.save_jobs'):
+                data = client.post('/api/jobs/refresh').json()
+                assert data['status'] == 'success'
+
+    def test_refresh_count_matches_fetched(self, client):
+        mock_jobs = SAMPLE_JOBS.copy()
+        with patch('src.fetcher.fetch_all_jobs', return_value=mock_jobs):
+            with patch('src.fetcher.save_jobs'):
+                data = client.post('/api/jobs/refresh').json()
+                assert data['count'] == len(mock_jobs)
+
+    def test_refresh_returns_500_on_error(self, client):
+        with patch('src.fetcher.fetch_all_jobs', side_effect=Exception('fetch failed')):
+            response = client.post('/api/jobs/refresh')
+            assert response.status_code == 500
+
+    def test_refresh_500_has_detail(self, client):
+        with patch('src.fetcher.fetch_all_jobs', side_effect=Exception('fetch failed')):
+            data = client.post('/api/jobs/refresh').json()
+            assert 'detail' in data
