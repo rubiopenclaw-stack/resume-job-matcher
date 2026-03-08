@@ -3,6 +3,7 @@
 """
 
 import re
+from collections import Counter
 from typing import List, Dict, Tuple
 
 
@@ -177,7 +178,6 @@ def get_summary_stats(matched_jobs: List[Dict]) -> Dict:
     for item in matched_jobs:
         all_skills.extend(item['matched_skills'])
     
-    from collections import Counter
     skill_counts = Counter(all_skills)
     
     return {

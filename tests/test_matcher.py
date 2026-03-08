@@ -11,6 +11,7 @@ from src.matcher import (
     filter_by_preference,
     match_jobs,
     get_summary_stats,
+    generate_email_content,
     SKILL_WEIGHTS,
 )
 
@@ -236,6 +237,91 @@ class TestGetSummaryStats:
         stats = get_summary_stats(items)
         top = [skill for skill, _ in stats['top_skills']]
         assert top[0] == 'python'  # most common
+
+
+# ===== Tests: generate_email_content =====
+
+class TestGenerateEmailContent:
+
+    def _make_matched_job(self, title='Python Dev', company='TechCorp', score=85.0, skills=None):
+        return {
+            'job': {
+                'title': title,
+                'company': company,
+                'salary': '100k-140k',
+                'location': 'Remote',
+                'url': 'https://example.com/job',
+            },
+            'score': score,
+            'matched_skills': skills or ['python', 'django'],
+        }
+
+    def test_returns_string(self):
+        resume = {'name': 'Alice', 'skills': ['python']}
+        result = generate_email_content(resume, [self._make_matched_job()])
+        assert isinstance(result, str)
+
+    def test_contains_name(self):
+        resume = {'name': 'Bob', 'skills': ['python']}
+        result = generate_email_content(resume, [self._make_matched_job()])
+        assert 'Bob' in result
+
+    def test_default_name_when_missing(self):
+        resume = {'skills': ['python']}
+        result = generate_email_content(resume, [self._make_matched_job()])
+        assert '求職者' in result
+
+    def test_contains_job_title(self):
+        resume = {'name': 'Alice', 'skills': ['python']}
+        jobs = [self._make_matched_job(title='Senior ML Engineer')]
+        result = generate_email_content(resume, jobs)
+        assert 'Senior ML Engineer' in result
+
+    def test_contains_company(self):
+        resume = {'name': 'Alice', 'skills': ['python']}
+        jobs = [self._make_matched_job(company='AIStartup')]
+        result = generate_email_content(resume, jobs)
+        assert 'AIStartup' in result
+
+    def test_contains_score(self):
+        resume = {'name': 'Alice', 'skills': ['python']}
+        jobs = [self._make_matched_job(score=92.5)]
+        result = generate_email_content(resume, jobs)
+        assert '92.5' in result
+
+    def test_contains_matched_skills(self):
+        resume = {'name': 'Alice', 'skills': ['python', 'fastapi']}
+        jobs = [self._make_matched_job(skills=['python', 'fastapi'])]
+        result = generate_email_content(resume, jobs)
+        assert 'python' in result
+
+    def test_multiple_jobs_numbered(self):
+        resume = {'name': 'Alice', 'skills': ['python']}
+        jobs = [
+            self._make_matched_job(title='Job One'),
+            self._make_matched_job(title='Job Two'),
+        ]
+        result = generate_email_content(resume, jobs)
+        assert 'Job One' in result
+        assert 'Job Two' in result
+        assert '1.' in result
+        assert '2.' in result
+
+    def test_empty_jobs_list(self):
+        resume = {'name': 'Alice', 'skills': ['python']}
+        result = generate_email_content(resume, [])
+        assert isinstance(result, str)
+        assert len(result) > 0
+
+    def test_no_matched_skills_shows_na(self):
+        resume = {'name': 'Alice', 'skills': []}
+        job_item = {
+            'job': {'title': 'Dev', 'company': 'Co', 'salary': 'N/A', 'location': 'Remote', 'url': 'http://x'},
+            'score': 80.0,
+            'matched_skills': [],
+        }
+        result = generate_email_content(resume, [job_item])
+        assert 'N/A' in result
 
 
 # ===== Tests: SKILL_WEIGHTS sanity =====
