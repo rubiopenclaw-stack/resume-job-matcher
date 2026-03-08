@@ -3,6 +3,7 @@
 """
 
 import os
+import re
 import resend
 from typing import Dict, List
 
@@ -40,17 +41,15 @@ def markdown_to_html(markdown: str) -> str:
     """簡單的 Markdown 到 HTML 轉換"""
     html = markdown
     
-    # 標題
-    html = html.replace('# ', '<h1>').replace('\n# ', '</h1><h1>')
-    html = html.replace('## ', '<h2>').replace('\n## ', '</h2><h2>')
-    html = html.replace('### ', '<h3>').replace('\n### ', '</h3><h3>')
+    # 標題（用 regex，從多到少避免 ## 被 # 誤匹配）
+    html = re.sub(r'^### (.+)$', r'<h3>\1</h3>', html, flags=re.MULTILINE)
+    html = re.sub(r'^## (.+)$', r'<h2>\1</h2>', html, flags=re.MULTILINE)
+    html = re.sub(r'^# (.+)$', r'<h1>\1</h1>', html, flags=re.MULTILINE)
     
     # 粗體
-    html = html.replace('**', '<strong>', 1)
-    html = html.replace('**', '</strong>', 1)
-    
+    html = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', html)
+
     # 連結
-    import re
     html = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2">\1</a>', html)
     
     # 換行
