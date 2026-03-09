@@ -214,5 +214,5 @@ if __name__ == '__main__':
     
     # 測試新增的 Remotive
     print("\n--- Testing new source: Remotive ---")
-    remotive_jobs = fetch_remotive_jobs(10)
+    remotive_jobs = JobFetcher.fetch_from('Remotive', 10)
     print(f"Remotive fetched: {len(remotive_jobs)} jobs")

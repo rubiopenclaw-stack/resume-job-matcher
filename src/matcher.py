@@ -4,6 +4,7 @@
 
 import re
 from collections import Counter
+from functools import lru_cache
 from typing import List, Dict, Tuple
 
 
@@ -36,6 +37,18 @@ SKILL_WEIGHTS = {
 }
 
 
+@lru_cache(maxsize=512)
+def _get_skill_weight(skill_lower: str) -> int:
+    """取得技能權重（帶快取，避免重複掃描）"""
+    weight = SKILL_WEIGHTS.get(skill_lower)
+    if weight is not None:
+        return weight
+    for key, w in SKILL_WEIGHTS.items():
+        if key in skill_lower or skill_lower in key:
+            return w
+    return 1
+
+
 def build_job_text(job: Dict) -> str:
     """建立職缺文字（用於匹配）"""
     return f"{job.get('title', '')} {job.get('description', '')} {' '.join(job.get('tags', []))}".lower()
@@ -51,17 +64,7 @@ def calculate_match_score(resume_skills: List[str], job: Dict, job_text: str = N
 
     for skill in resume_skills:
         skill_lower = skill.lower()
-
-        # 檢查是否有權重（先直接查找，再做子字串掃描）
-        weight = SKILL_WEIGHTS.get(skill_lower)
-        if weight is None:
-            for key, w in SKILL_WEIGHTS.items():
-                if key in skill_lower or skill_lower in key:
-                    weight = w
-                    break
-            else:
-                weight = 1
-
+        weight = _get_skill_weight(skill_lower)
         total_weight += weight
 
         if skill_lower in job_text:

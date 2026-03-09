@@ -66,8 +66,8 @@ def parse_resume(resume_path: str) -> Dict:
     return {
         'name': front_matter.get('name', 'Anonymous'),
         'email': front_matter.get('email', ''),
-        'preferred_roles': front_matter.get('preferred_roles', '').split(','),
-        'preferred_locations': front_matter.get('preferred_locations', 'Remote').split(','),
+        'preferred_roles': [r.strip() for r in front_matter.get('preferred_roles', '').split(',') if r.strip()],
+        'preferred_locations': [l.strip() for l in front_matter.get('preferred_locations', 'Remote').split(',') if l.strip()],
         'skills': skills,
         'roles': roles,
         'raw_content': content,

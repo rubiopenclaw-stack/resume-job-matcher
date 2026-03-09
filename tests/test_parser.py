@@ -144,14 +144,24 @@ class TestParseResume:
     def test_parse_extracts_preferred_roles(self, tmp_path):
         path = write_resume(tmp_path, 'test.md', SAMPLE_RESUME_MD)
         result = parse_resume(path)
-        roles = [r.strip() for r in result['preferred_roles']]
-        assert 'AI Engineer' in roles or 'Backend' in roles
+        assert 'AI Engineer' in result['preferred_roles'] or 'Backend' in result['preferred_roles']
 
     def test_parse_extracts_preferred_locations(self, tmp_path):
         path = write_resume(tmp_path, 'test.md', SAMPLE_RESUME_MD)
         result = parse_resume(path)
-        locs = [l.strip() for l in result['preferred_locations']]
-        assert 'Remote' in locs
+        assert 'Remote' in result['preferred_locations']
+
+    def test_parse_preferred_roles_no_leading_spaces(self, tmp_path):
+        path = write_resume(tmp_path, 'test.md', SAMPLE_RESUME_MD)
+        result = parse_resume(path)
+        for role in result['preferred_roles']:
+            assert role == role.strip(), f"Role has leading/trailing whitespace: {role!r}"
+
+    def test_parse_empty_preferred_roles_returns_empty_list(self, tmp_path):
+        content = "---\nname: Test\npreferred_roles: \n---\n## Skills\n- Python\n"
+        path = write_resume(tmp_path, 'test.md', content)
+        result = parse_resume(path)
+        assert result['preferred_roles'] == []
 
     def test_parse_extracts_skills(self, tmp_path):
         path = write_resume(tmp_path, 'test.md', SAMPLE_RESUME_MD)
