@@ -134,14 +134,42 @@ class TestFilterByPreference:
         # Remote jobs with 'remote' in location also pass through regardless
         assert any('engineer' in t for t in titles)
 
-    def test_remote_jobs_always_included(self, sample_jobs):
-        # Even if role doesn't match, remote jobs pass through
+    def test_remote_jobs_require_role_match(self, sample_jobs):
+        # Remote jobs now require role matching (2026-03-10 fix)
+        # When preferred_roles is set but doesn't match any remote job, no remote jobs pass through
         resume = {
             'preferred_roles': ['designer'],  # nothing matches designer
             'preferred_locations': ['remote'],
         }
         result = filter_by_preference(resume, sample_jobs)
-        # All remote-location jobs should still be in results
+        # No remote jobs should be included since none match "designer"
+        remote_jobs = [j for j in sample_jobs if 'remote' in j['location'].lower()]
+        result_ids = {j['id'] for j in result}
+        for job in remote_jobs:
+            assert job['id'] not in result_ids
+
+    def test_remote_jobs_pass_when_role_matches(self, sample_jobs):
+        # Remote jobs pass through when role matches
+        resume = {
+            'preferred_roles': ['ai'],  # matches AI Engineer
+            'preferred_locations': ['remote'],
+        }
+        result = filter_by_preference(resume, sample_jobs)
+        result_ids = {j['id'] for j in result}
+        # j1 (AI Engineer) should match "ai"
+        assert 'j1' in result_ids  # AI Engineer
+        # j2 (Frontend Developer) doesn't have "ai" in title
+        assert 'j2' not in result_ids
+        # j4 (Data Scientist) doesn't have "ai" in title
+        assert 'j4' not in result_ids
+
+    def test_remote_jobs_pass_when_no_role_preference(self, sample_jobs):
+        # When no role preference, all remote jobs pass through
+        resume = {
+            'preferred_roles': [],
+            'preferred_locations': ['remote'],
+        }
+        result = filter_by_preference(resume, sample_jobs)
         remote_jobs = [j for j in sample_jobs if 'remote' in j['location'].lower()]
         result_ids = {j['id'] for j in result}
         for job in remote_jobs:

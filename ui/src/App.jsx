@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 
 const PAGE_SIZE = 20
 
@@ -139,9 +139,8 @@ function App() {
     })
   }
 
-  const isFavorite = useCallback((jobId) => {
-    return favorites.some(f => f.id === jobId)
-  }, [favorites])
+  const favoriteIds = useMemo(() => new Set(favorites.map(f => f.id)), [favorites])
+  const isFavorite = useCallback((jobId) => favoriteIds.has(jobId), [favoriteIds])
 
   const clearFilters = () => {
     setSearch('')

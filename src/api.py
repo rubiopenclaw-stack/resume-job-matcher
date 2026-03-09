@@ -203,7 +203,10 @@ async def refresh_jobs():
     """手動觸發職缺重新整理"""
     try:
         invalidate_cache()
-        from src.fetcher import fetch_all_jobs, save_jobs
+        try:
+            from src.fetcher import fetch_all_jobs, save_jobs
+        except ModuleNotFoundError:
+            from fetcher import fetch_all_jobs, save_jobs
         jobs = fetch_all_jobs()
         save_jobs(jobs)
         invalidate_cache()  # 重新載入新資料
