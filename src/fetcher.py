@@ -203,7 +203,7 @@ class JobFetcher:
 
         for _, jobs in results:
             for job in jobs:
-                unique_id = f"{job.get('source')}-{job.get('id') or job.get('title', '')}-{job.get('company', '')}"
+                unique_id = f"{job.get('source')}-{job.get('id') or job.get('url', '')}"
                 if unique_id not in seen_ids:
                     seen_ids.add(unique_id)
                     all_jobs.append(job)
