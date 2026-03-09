@@ -84,6 +84,62 @@
 
 ---
 
+## ~~Bug Fix：fetcher.py unique_id 在 id=None 時碰撞~~ ✅ 已修復 (2026-03-10)
+
+**問題描述**
+`JobFetcher.fetch_all()` 的去重邏輯：
+```python
+unique_id = f"{job.get('source')}-{job.get('id', job.get('slug', ''))}"
+```
+當 `id` 在 dict 中存在但值為 `None` 時（`normalize_job` 中 `'id': job.get('id')` 可能為 None），
+`job.get('id', fallback)` 不會使用 fallback（fallback 只在 key 不存在時才觸發），
+導致 unique_id 變成 `"RemoteOK-None"` 這種字串，多個無 ID 職缺互相碰撞，只有第一個能進列表。
+
+**已修復**：改用 `id or url` 作為 fallback，URL 具全局唯一性：
+```python
+unique_id = f"{job.get('source')}-{job.get('id') or job.get('url', '')}"
+```
+
+---
+
+## 待確認提案（需 Allen 決定）
+
+### 提案六：requirements.txt 加入版本鎖定
+
+**問題描述**
+`requirements.txt` 完全沒有版本限制，`pip install` 時會拉最新版，可能造成兼容性問題。
+例如 `anthropic` SDK 有時有 breaking changes（message API 格式變化）。
+
+**建議方案**
+```
+anthropic>=0.40.0,<1.0
+openai>=1.50.0,<2.0
+fastapi>=0.110.0,<1.0
+uvicorn[standard]>=0.27.0
+requests>=2.31.0
+python-dotenv>=1.0.0
+httpx>=0.27.0
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+```
+
+**預估影響**：低。只影響開發環境一致性，不影響現有功能。
+
+---
+
+### 提案七：新增職缺來源（Himalayas / We Work Remotely）
+
+**問題描述**
+目前 3 個來源（RemoteOK, Remotive, Arbeitnow）中，Arbeitnow 偏歐洲、需簽證，
+對台灣求職者效益有限。
+
+**建議方案**
+新增 Himalayas（himalayas.app/jobs.json，免費，高品質遠端職缺）作為第四來源。
+
+**預估影響**：中。需要測試 API 穩定性，新增 Adapter class。等 Allen 決定。
+
+---
+
 ## 優先級建議
 
 | 優先 | 提案 | 原因 | 狀態 |
@@ -95,3 +151,6 @@
 | ✅ | Bug Fix（use_ai 判斷）| Claude API key 被忽略 | 已完成 |
 | ✅ | Bug Fix（parser 技能庫）| RAG/向量 DB 技能無法被解析 | 已完成 |
 | ✅ | 提案三（UI 匹配分數）| 功能完整性，使用者體驗核心 | 已完成 |
+| ✅ | Bug Fix（unique_id 碰撞）| 職缺去重失效，影響資料完整性 | 已完成 |
+| ❓ | 提案六（版本鎖定）| 環境穩定性 | 等 Allen 決定 |
+| ❓ | 提案七（Himalayas 來源）| 更多台灣適合的職缺 | 等 Allen 決定 |
