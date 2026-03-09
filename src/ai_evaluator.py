@@ -5,6 +5,7 @@ AI 評估器 - 增強版
 import os
 import json
 import re
+import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List, Optional
 
@@ -14,18 +15,27 @@ try:
 except ImportError:
     OPENAI_AVAILABLE = False
 
+# Singleton client，避免每次呼叫都建立新連線池
+_openai_client = None
+_client_lock = threading.Lock()
+
 
 def get_openai_client():
-    """取得 OpenAI client"""
+    """取得 OpenAI client（singleton）"""
+    global _openai_client
+
     if not OPENAI_AVAILABLE:
         return None
-    
+
     api_key = os.environ.get('OPENAI_API_KEY')
     if not api_key:
         return None
-    
-    base_url = os.environ.get('OPENAI_BASE_URL', 'https://api.openai.com/v1')
-    return openai.OpenAI(api_key=api_key, base_url=base_url)
+
+    with _client_lock:
+        if _openai_client is None:
+            base_url = os.environ.get('OPENAI_BASE_URL', 'https://api.openai.com/v1')
+            _openai_client = openai.OpenAI(api_key=api_key, base_url=base_url)
+        return _openai_client
 
 
 def evaluate_match_with_ai(resume: Dict, job: Dict, model: str = None) -> Dict:

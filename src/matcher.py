@@ -82,31 +82,36 @@ def calculate_match_score(resume_skills: List[str], job: Dict, job_text: str = N
 
 
 def filter_by_preference(resume: Dict, jobs: List[Dict]) -> List[Dict]:
-    """根據偏好過濾職缺"""
-    preferred_roles = [r.lower() for r in resume.get('preferred_roles', [])]
-    preferred_locations = [l.lower() for l in resume.get('preferred_locations', [])]
-    
+    """根據偏好過濾職缺
+
+    規則：
+    - Remote 職缺永遠通過（bypass role & location 過濾）
+    - 非 Remote 職缺需同時符合角色與地點偏好
+    - 偏好未設定（空清單）視為全部通過
+    """
+    preferred_roles = [r.strip().lower() for r in resume.get('preferred_roles', []) if r.strip()]
+    preferred_locations = [l.strip().lower() for l in resume.get('preferred_locations', []) if l.strip()]
+
     filtered = []
-    
+
     for job in jobs:
-        title = job.get('title', '').lower()
         location = job.get('location', '').lower()
-        
-        # 檢查角色偏好
-        role_match = True
-        if preferred_roles:
-            role_match = any(role in title for role in preferred_roles)
-        
-        # 檢查地點偏好（Remote 永遠通過）
-        location_match = True
-        if preferred_locations and 'remote' not in location:
-            location_match = any(loc in location for loc in preferred_locations if loc != 'remote')
-        
-        if role_match and (location_match or 'remote' in location):
+
+        # Remote 職缺永遠納入
+        if 'remote' in location:
             filtered.append(job)
-        elif 'remote' in location:  # Remote 職缺永遠保留
+            continue
+
+        title = job.get('title', '').lower()
+        role_match = not preferred_roles or any(role in title for role in preferred_roles)
+        location_match = (
+            not preferred_locations
+            or any(loc in location for loc in preferred_locations if loc != 'remote')
+        )
+
+        if role_match and location_match:
             filtered.append(job)
-    
+
     return filtered
 
 

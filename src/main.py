@@ -12,45 +12,23 @@ from parser import get_all_resumes
 from fetcher import fetch_all_jobs, save_jobs, load_jobs
 from matcher import match_jobs, get_summary_stats
 from ai_evaluator import evaluate_batch, format_ai_message, simple_match
+from openclaw_notifier import send_telegram_message
 
-# 通知方式
-NOTIFY_METHOD = os.environ.get('NOTIFY_METHOD', 'openclaw')
+# 絕對路徑，不受工作目錄影響
+RESUMES_DIR = Path(__file__).parent.parent / 'resumes'
+JOBS_FILE = Path(__file__).parent.parent / 'jobs' / 'latest.json'
 
-# Telegram
-TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+# 通知方式：telegram（預設）或其他
+NOTIFY_METHOD = os.environ.get('NOTIFY_METHOD', 'telegram')
 MESSAGE_TARGET = os.environ.get('MESSAGE_TARGET')
 
 
-def send_telegram(message: str) -> bool:
-    """發送 Telegram"""
-    if not TELEGRAM_BOT_TOKEN:
-        print("❌ TELEGRAM_BOT_TOKEN not set")
-        return False
-    
-    if not MESSAGE_TARGET:
-        print("❌ MESSAGE_TARGET not set")
-        return False
-    
-    import requests
-    
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    payload = {
-        "chat_id": MESSAGE_TARGET,
-        "text": message,
-        "parse_mode": "Markdown",
-        "disable_web_page_preview": True
-    }
-    
-    try:
-        response = requests.post(url, json=payload, timeout=10)
-        if response.ok:
-            print(f"✅ Telegram sent")
-            return True
-        else:
-            print(f"❌ Telegram error: {response.text}")
-            return False
-    except Exception as e:
-        print(f"❌ Error: {e}")
+def send_notification(message: str) -> bool:
+    """依 NOTIFY_METHOD 發送通知"""
+    if NOTIFY_METHOD in ('telegram', 'openclaw'):
+        return send_telegram_message(message, MESSAGE_TARGET)
+    else:
+        print(f"⚠️  未知的 NOTIFY_METHOD: {NOTIFY_METHOD}，跳過通知")
         return False
 
 
@@ -59,18 +37,18 @@ def main():
     
     # 1. 解析履歷
     print("\n📄 Parsing resumes...")
-    resumes = get_all_resumes('resumes')
+    resumes = get_all_resumes(str(RESUMES_DIR))
     if not resumes:
         print("❌ No resumes found")
         return
-    
+
     print(f"   Found {len(resumes)} resume(s)")
-    
+
     # 2. 獲取職缺
     print("\n💼 Fetching jobs from multiple sources...")
-    jobs = load_jobs('jobs/latest.json')
+    jobs = load_jobs(JOBS_FILE)
     print(f"   Loaded {len(jobs)} jobs")
-    
+
     if os.environ.get('FORCE_REFETCH'):
         jobs = fetch_all_jobs()
         save_jobs(jobs)
@@ -123,7 +101,7 @@ def main():
         print(f"   Matched {len(ai_matches)} jobs")
         
         # 發送
-        if send_telegram(message):
+        if send_notification(message):
             print(f"   ✅ Notification sent")
         else:
             print(f"   ❌ Failed to send")

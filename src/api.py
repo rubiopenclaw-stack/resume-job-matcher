@@ -6,10 +6,10 @@ FastAPI Server - 職缺獵人 API (優化版)
 """
 
 import json
+import os
 from collections import Counter
 from pathlib import Path
 from datetime import datetime, timedelta
-from functools import lru_cache
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, List, Dict
@@ -17,10 +17,13 @@ import threading
 
 app = FastAPI(title="職缺獵人 API", version="1.2.0")
 
-# CORS 允許 React 開發伺服器
+# CORS：預設允許本地開發伺服器，可透過環境變數擴充（如 Cloudflare Tunnel）
+_default_origins = "http://localhost:5173,http://127.0.0.1:5173"
+_cors_origins = os.environ.get('CORS_ORIGINS', _default_origins).split(',')
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -48,14 +51,14 @@ def get_jobs_cache() -> tuple[List[Dict], datetime]:
     """取得快取的職缺資料與時間"""
     with _cache_lock:
         if 'jobs' in _cache and 'timestamp' in _cache:
-            # 檢查快取是否過期
             age = datetime.now() - _cache['timestamp']
             if age < timedelta(minutes=CACHE_TTL_MINUTES):
                 return _cache['jobs'], _cache['timestamp']
-        
-        # 重新載入
+
+        # 重新載入並建立 id 索引（O(1) 查詢）
         jobs = _load_jobs_from_file()
         _cache['jobs'] = jobs
+        _cache['jobs_by_id'] = {str(j.get('id', '')): j for j in jobs if j.get('id')}
         _cache['timestamp'] = datetime.now()
         return jobs, _cache['timestamp']
 
@@ -208,11 +211,13 @@ async def refresh_jobs():
 
 @app.get("/api/jobs/{job_id}")
 async def get_job(job_id: str):
-    """取得單一職缺詳情"""
-    jobs, _ = get_jobs_cache()
-    for job in jobs:
-        if str(job.get('id', '')) == job_id:
-            return job
+    """取得單一職缺詳情（O(1) 索引查詢）"""
+    get_jobs_cache()  # 確保快取已建立
+    with _cache_lock:
+        jobs_by_id = _cache.get('jobs_by_id', {})
+    job = jobs_by_id.get(job_id)
+    if job:
+        return job
     raise HTTPException(status_code=404, detail=f"Job '{job_id}' not found")
 
 

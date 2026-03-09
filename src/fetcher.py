@@ -1,9 +1,8 @@
 """
 職缺獲取器 - 多來源 + Adapter 結構
-支持：RemoteOK, remote4me, Remotive
+支持：RemoteOK, Remotive
 """
 
-import os
 import json
 import requests
 from abc import ABC, abstractmethod
@@ -11,6 +10,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import List, Dict, Optional
 from datetime import datetime, timedelta
+
+# 絕對路徑，不受工作目錄影響
+JOBS_DIR = Path(__file__).parent.parent / 'jobs'
 
 
 # ========== Base Adapter ==========
@@ -35,7 +37,8 @@ class JobSourceAdapter(ABC):
             'tags': job.get('tags', job.get('skills', [])),
             'location': job.get('location', 'Remote'),
             'source': self.name,
-            'raw': job  # 保留原始資料
+            'salary_min': job.get('salary_min') or 0,
+            'salary_max': job.get('salary_max') or 0,
         }
 
 
@@ -49,19 +52,18 @@ class RemoteOKAdapter(JobSourceAdapter):
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
             'Accept': 'application/json',
         }
-        
+
         try:
             response = requests.get("https://remoteok.com/api", headers=headers, timeout=30)
             jobs = response.json()
-            
+
             filtered = []
             for job in jobs:
                 if job.get('slug') and job.get('company') and job.get('position'):
                     job['title'] = job.pop('position')
                     job['url'] = job.get('apply_url') or f"https://remoteok.com/l/{job['slug']}"
-                    job['source'] = self.name
-                    filtered.append(job)
-            
+                    filtered.append(self.normalize_job(job))
+
             return filtered[:limit]
         except Exception as e:
             print(f"  {self.name} error: {e}")
@@ -79,47 +81,23 @@ class RemotiveAdapter(JobSourceAdapter):
                 "https://remotive.com/api/remote-jobs",
                 timeout=20
             )
-            
+
             if response.status_code != 200:
                 return []
-            
+
             data = response.json()
             jobs = data.get('jobs', [])
-            
+
             filtered = []
             for job in jobs:
                 if job.get('title') and job.get('company_name'):
                     job['company'] = job.pop('company_name')
-                    job['tags'] = job.get('tags', [])
-                    job['source'] = self.name
-                    filtered.append(job)
-            
+                    filtered.append(self.normalize_job(job))
+
             return filtered[:limit]
         except Exception as e:
             print(f"  {self.name} error: {e}")
             return []
-
-
-# ========== remote4me Adapter (API 已失效，返回 404) ==========
-class Remote4MeAdapter(JobSourceAdapter):
-    """remote4me 職缺來源 (API 已失效)"""
-    name = "remote4me"
-    
-    def fetch(self, limit: int = 30) -> List[Dict]:
-        # API 已失效，返回 404
-        print(f"  {self.name}: API no longer available")
-        return []
-
-
-# ========== JustRemote Adapter (API 已失效) ==========
-class JustRemoteAdapter(JobSourceAdapter):
-    """JustRemote 職缺來源 (API 已失效，返回 HTML)"""
-    name = "JustRemote"
-    
-    def fetch(self, limit: int = 30) -> List[Dict]:
-        # API 已失效，返回 HTML 而非 JSON
-        print(f"  {self.name}: API no longer available")
-        return []
 
 
 # ========== Job Fetcher (工廠模式) ==========
@@ -188,60 +166,43 @@ class JobFetcher:
         return all_jobs
 
 
-# ========== 便捷函數 (向後相容) ==========
-def fetch_remoteok_jobs(limit: int = 50) -> List[Dict]:
-    """從 RemoteOK 抓取職缺 (向後相容)"""
-    return JobFetcher.fetch_from('RemoteOK', limit)
-
-
-def fetch_remote4me_jobs(limit: int = 30) -> List[Dict]:
-    """從 remote4me 抓取職缺 (向後相容)"""
-    return JobFetcher.fetch_from('remote4me', limit)
-
-
-def fetch_justremote_jobs(limit: int = 30) -> List[Dict]:
-    """從 justremote.co 抓取職缺 (向後相容)"""
-    return JobFetcher.fetch_from('JustRemote', limit)
-
-
-def fetch_remotive_jobs(limit: int = 50) -> List[Dict]:
-    """從 Remotive 抓取職缺 (新來源)"""
-    return JobFetcher.fetch_from('Remotive', limit)
-
-
+# ========== 便捷函數 ==========
 def fetch_all_jobs(limit_per_source: int = 40) -> List[Dict]:
     """從多來源抓取職缺"""
     return JobFetcher.fetch_all(limit_per_source=limit_per_source)
 
 
-def save_jobs(jobs: List[Dict], filepath: str = 'jobs/latest.json'):
-    """保存職缺"""
-    Path(filepath).parent.mkdir(parents=True, exist_ok=True)
-    
+def save_jobs(jobs: List[Dict], filepath: Path = None):
+    """保存職缺（預設使用絕對路徑）"""
+    filepath = Path(filepath) if filepath else JOBS_DIR / 'latest.json'
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+
     data = {
         'fetched_at': datetime.now().isoformat(),
         'count': len(jobs),
         'jobs': jobs,
-        'sources': list(set(j.get('source') for j in jobs))
+        'sources': sorted({j.get('source') for j in jobs if j.get('source')}),
     }
-    
+
     with open(filepath, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-def load_jobs(filepath: str = 'jobs/latest.json') -> List[Dict]:
-    """加載職缺"""
-    if not Path(filepath).exists():
+def load_jobs(filepath: Path = None) -> List[Dict]:
+    """加載職缺（預設使用絕對路徑）"""
+    filepath = Path(filepath) if filepath else JOBS_DIR / 'latest.json'
+
+    if not filepath.exists():
         return fetch_all_jobs()
-    
+
     with open(filepath, 'r', encoding='utf-8') as f:
         data = json.load(f)
-    
+
     fetched_at = datetime.fromisoformat(data['fetched_at'])
     if datetime.now() - fetched_at > timedelta(hours=6):
         print("Cache expired, refetching...")
         return fetch_all_jobs()
-    
+
     return data.get('jobs', [])
 
 

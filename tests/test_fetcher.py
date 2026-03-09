@@ -16,8 +16,6 @@ from src.fetcher import (
     JobSourceAdapter,
     RemoteOKAdapter,
     RemotiveAdapter,
-    Remote4MeAdapter,
-    JustRemoteAdapter,
     JobFetcher,
     fetch_all_jobs,
     save_jobs,
@@ -105,12 +103,12 @@ class TestJobSourceAdapterNormalize:
         result = adapter.normalize_job({'company_name': 'FallbackCorp'})
         assert result['company'] == 'FallbackCorp'
 
-    def test_normalize_job_preserves_raw(self):
+    def test_normalize_job_includes_salary_fields(self):
         adapter = RemoteOKAdapter()
-        raw = {'id': 'x', 'custom_field': 'value'}
+        raw = {'id': 'x', 'salary_min': 80000, 'salary_max': 120000}
         result = adapter.normalize_job(raw)
-        assert 'raw' in result
-        assert result['raw']['custom_field'] == 'value'
+        assert result['salary_min'] == 80000
+        assert result['salary_max'] == 120000
 
 
 # ===== Tests: RemoteOKAdapter =====
@@ -212,19 +210,6 @@ class TestRemotiveAdapter:
             jobs = adapter.fetch(limit=10)
         for job in jobs:
             assert job.get('source') == 'Remotive'
-
-
-# ===== Tests: Dead Adapters =====
-
-class TestDeadAdapters:
-
-    def test_remote4me_returns_empty(self):
-        adapter = Remote4MeAdapter()
-        assert adapter.fetch() == []
-
-    def test_justremote_returns_empty(self):
-        adapter = JustRemoteAdapter()
-        assert adapter.fetch() == []
 
 
 # ===== Tests: JobFetcher =====
