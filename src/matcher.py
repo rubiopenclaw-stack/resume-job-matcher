@@ -88,7 +88,7 @@ def filter_by_preference(resume: Dict, jobs: List[Dict]) -> List[Dict]:
     """根據偏好過濾職缺
 
     規則：
-    - Remote 職缺永遠通過（bypass role & location 過濾）
+    - Remote 職缺：通過角色過濾，但 bypass 地點過濾
     - 非 Remote 職缺需同時符合角色與地點偏好
     - 偏好未設定（空清單）視為全部通過
     """
@@ -99,13 +99,14 @@ def filter_by_preference(resume: Dict, jobs: List[Dict]) -> List[Dict]:
 
     for job in jobs:
         location = job.get('location', '').lower()
-
-        # Remote 職缺永遠納入
-        if 'remote' in location:
-            filtered.append(job)
-            continue
-
         title = job.get('title', '').lower()
+
+        # Remote 職缺：通過角色過濾，但 bypass 地點過濾
+        if 'remote' in location:
+            role_match = not preferred_roles or any(role in title for role in preferred_roles)
+            if role_match:
+                filtered.append(job)
+            continue
         role_match = not preferred_roles or any(role in title for role in preferred_roles)
         location_match = (
             not preferred_locations

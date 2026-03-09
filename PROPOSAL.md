@@ -15,6 +15,10 @@
    - 加入 Header 的 Refresh 按鈕，呼叫 `POST /api/jobs/refresh`
    - 顯示快取建立時間（幾分鐘前）
 
+3. **Bug Fix：Remote 職缺角色過濾**（`src/matcher.py`）- 2026-03-10 已修復
+   - 問題：Remote 職缺完全 bypass 角色過濾，設定 `preferred_roles: AI Engineer` 仍會出現遠端 Java/iOS 職缺
+   - 修復：Remote 職缺改為通過角色過濾，但仍 bypass 地點過濾
+
 ---
 
 ## 提案一：切換 AI 評估引擎至 Anthropic Claude
@@ -71,41 +75,38 @@
 
 ---
 
-## 提案四：改善 Remote 職缺過濾邏輯
+## ~~提案四：改善 Remote 職缺過濾邏輯~~ ✅ 已完成 (2026-03-10)
 
 **問題描述**
-`matcher.py:filter_by_preference` 目前對所有 Remote 職缺 bypass 角色過濾，導致即使設定 `preferred_roles: AI Engineer`，仍會出現遠端 Java / iOS 職缺。
+`matcher.py:filter_by_preference` 對所有 Remote 職缺 bypass 角色過濾，導致即使設定 `preferred_roles: AI Engineer`，仍會出現遠端 Java / iOS 職缺。
 
-**現有邏輯**
-```python
-# Remote 職缺永遠納入（bypass role & location 過濾）
-if 'remote' in location:
-    filtered.append(job)
-    continue
-```
+**已修復**：Remote 職缺改為通過角色過濾，但仍 bypass 地點過濾。
+
+---
+
+## 提案五：fetcher.py 快取 TTL 與 api.py 不一致
+
+**問題描述**
+- `fetcher.py:load_jobs()` 的快取 TTL 是 **6 小時**
+- `api.py` 的記憶體快取 TTL 是 **10 分鐘**
+
+兩者不一致，呼叫 `load_jobs()` 的路徑（如 GitHub Actions main.py）會使用到 6 小時前的舊資料，但 API 路徑每 10 分鐘就會刷新。
 
 **建議方案**
-改為 Remote 職缺仍需通過角色過濾，但 bypass 地點過濾：
-```python
-if 'remote' in location:
-    role_match = not preferred_roles or any(role in title for role in preferred_roles)
-    if role_match:
-        filtered.append(job)
-    continue
-```
+在 `fetcher.py` 頂部定義常數 `FILE_CACHE_TTL_HOURS = 6`，並在 README 說明兩層快取的設計意圖（File Cache vs Memory Cache）。
 
 **預估影響**
-- 匹配結果精準度提升
-- 職缺總數會減少（但更相關）
-- 可能影響現有使用者習慣的行為
+- 純文件修改，無功能變動
+- 幫助未來維護者理解快取設計
 
 ---
 
 ## 優先級建議
 
-| 優先 | 提案 | 原因 |
-|------|------|------|
-| 高 | 提案四（Remote 過濾）| 直接影響匹配品質 |
-| 中 | 提案一（Claude API）| 環境一致性 + 品質 |
-| 中 | 提案二（新來源） | 擴大職缺池 |
-| 低 | 提案三（UI 匹配分數）| 功能完整性 |
+| 優先 | 提案 | 原因 | 狀態 |
+|------|------|------|------|
+| ✅ | 提案四（Remote 過濾）| 直接影響匹配品質 | 已完成 |
+| 高 | 提案一（Claude API）| 環境一致性 + 品質 | 待決定 |
+| 中 | 提案二（新來源） | 擴大職缺池 | 待決定 |
+| 低 | 提案三（UI 匹配分數）| 功能完整性 | 待決定 |
+| 低 | 提案五（快取 TTL 文件）| 維護性 | 待決定 |
