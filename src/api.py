@@ -113,7 +113,7 @@ def search_jobs(jobs: List[Dict], search: str) -> List[Dict]:
 
 @app.get("/api/jobs")
 async def get_jobs(
-    search: Optional[str] = Query(None, description="搜尋關鍵字"),
+    search: Optional[str] = Query(None, max_length=100, description="搜尋關鍵字"),
     source: Optional[str] = Query(None, description="篩選來源"),
     location: Optional[str] = Query(None, description="篩選地點"),
     salary_min: Optional[int] = Query(None, description="最低薪資過濾"),
@@ -138,11 +138,13 @@ async def get_jobs(
         location_lower = location.lower()
         jobs = [j for j in jobs if location_lower in j.get('location', '').lower()]
 
-    # 薪資過濾（salary_min 和 salary_max 欄位）
-    if salary_min is not None:
-        jobs = [j for j in jobs if (j.get('salary_max') or 0) >= salary_min]
-    if salary_max is not None:
-        jobs = [j for j in jobs if (j.get('salary_min') or 0) <= salary_max]
+    # 薪資過濾（單次迭代同時套用 min/max）
+    if salary_min is not None or salary_max is not None:
+        jobs = [
+            j for j in jobs
+            if (salary_min is None or (j.get('salary_max') or 0) >= salary_min)
+            and (salary_max is None or (j.get('salary_min') or 0) <= salary_max)
+        ]
 
     # 搜尋過濾
     if search:
@@ -200,7 +202,7 @@ async def refresh_jobs():
     """手動觸發職缺重新整理"""
     try:
         invalidate_cache()
-        from src.fetcher import fetch_all_jobs, save_jobs
+        from fetcher import fetch_all_jobs, save_jobs
         jobs = fetch_all_jobs()
         save_jobs(jobs)
         invalidate_cache()  # 重新載入新資料

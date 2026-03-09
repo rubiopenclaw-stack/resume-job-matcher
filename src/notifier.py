@@ -4,17 +4,26 @@
 
 import os
 import re
-import resend
 from typing import Dict, List
+
+try:
+    import resend
+    RESEND_AVAILABLE = True
+except ImportError:
+    RESEND_AVAILABLE = False
 
 
 def send_email(to: str, subject: str, html: str, from_email: str = None) -> bool:
     """使用 Resend 發送郵件"""
+    if not RESEND_AVAILABLE:
+        print("resend package not installed")
+        return False
+
     api_key = os.environ.get('RESEND_API_KEY')
     if not api_key:
         print("RESEND_API_KEY not set")
         return False
-    
+
     resend.api_key = api_key
     
     # 預設發件人
@@ -86,7 +95,7 @@ def markdown_to_html(markdown: str) -> str:
 
 def send_match_report(resume: Dict, matched_jobs: List[Dict], to: str) -> bool:
     """發送匹配報告"""
-    from src.matcher import generate_email_content, get_summary_stats
+    from matcher import generate_email_content, get_summary_stats
     
     name = resume.get('name', '求職者')
     stats = get_summary_stats(matched_jobs)
@@ -105,7 +114,7 @@ def send_match_report(resume: Dict, matched_jobs: List[Dict], to: str) -> bool:
 
 def send_digest_email(resumes: List[Dict], jobs: List[Dict], to: str) -> bool:
     """發送匯總郵件（多個履歷）"""
-    from src.matcher import match_jobs, generate_email_content
+    from matcher import match_jobs, generate_email_content
     
     all_content = "# 🎯 每日職缺匹配報告\n\n"
     

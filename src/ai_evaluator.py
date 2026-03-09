@@ -88,11 +88,18 @@ def evaluate_match_with_ai(resume: Dict, job: Dict, model: str = None) -> Dict:
         
         content = response.choices[0].message.content.strip()
 
-        # 用 regex 擷取第一個 JSON 物件，容錯 markdown code block
-        match = re.search(r'\{.*\}', content, re.DOTALL)
-        if not match:
+        # 擷取第一個合法 JSON 物件，避免 greedy regex 跨多個物件
+        decoder = json.JSONDecoder()
+        result = None
+        for i, char in enumerate(content):
+            if char == '{':
+                try:
+                    result, _ = decoder.raw_decode(content, i)
+                    break
+                except json.JSONDecodeError:
+                    continue
+        if result is None:
             raise json.JSONDecodeError("No JSON object found", content, 0)
-        result = json.loads(match.group())
         
         return {
             'reason': result.get('match_reason', ''),
