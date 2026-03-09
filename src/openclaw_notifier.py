@@ -8,11 +8,7 @@ import requests
 from typing import Dict, List, Optional
 
 
-# OpenClaw 配置
-GATEWAY_URL = os.environ.get('GATEWAY_URL', 'http://localhost:18789')
-GATEWAY_TOKEN = os.environ.get('GATEWAY_TOKEN', '0000')
-
-# Telegram Bot 配置（備用方案）
+# Telegram Bot 配置
 TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 TELEGRAM_CHAT_ID = os.environ.get('MESSAGE_TARGET') or os.environ.get('TELEGRAM_CHAT_ID')
 

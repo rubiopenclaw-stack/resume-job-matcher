@@ -131,11 +131,11 @@ body {
 }
 
 .filters .btn-secondary:hover {
-  background: #* Job List */
-.job059669;
+  background: #059669;
 }
 
-/-list {
+/* Job List */
+.job-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -357,19 +357,166 @@ body {
   border-color: var(--primary);
 }
 
+/* Salary input */
+.salary-input {
+  width: 130px;
+  min-width: unset !important;
+  flex: unset !important;
+}
+
+/* Salary info in card */
+.salary-info {
+  color: #059669 !important;
+  font-weight: 500;
+}
+
+/* Salary tag in favorites */
+.salary-tag {
+  font-size: 0.8rem;
+  color: #059669;
+  margin-top: 4px;
+}
+
+/* Error state */
+.error-state {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-radius: 12px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #DC2626;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+
+/* Result info bar */
+.result-info {
+  font-size: 0.875rem;
+  color: var(--text-light);
+  margin-bottom: 12px;
+  padding: 8px 4px;
+}
+
+.result-info strong {
+  color: var(--text);
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px 0;
+}
+
+.page-btn {
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  color: var(--text);
+}
+
+.page-btn:hover:not(:disabled) {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.page-info {
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  color: var(--text-light);
+  min-width: 80px;
+  text-align: center;
+}
+
+/* Clickable tags */
+.tag-clickable {
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tag-clickable:hover {
+  background: #DBEAFE;
+  color: #1D4ED8;
+}
+
+/* Skeleton loading */
+.skeleton-card {
+  pointer-events: none;
+}
+
+.skeleton {
+  border-radius: 6px;
+  background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+.skeleton-title {
+  height: 20px;
+  width: 60%;
+  margin-bottom: 10px;
+}
+
+.skeleton-company {
+  height: 14px;
+  width: 35%;
+  margin-bottom: 16px;
+}
+
+.skeleton-tags {
+  height: 12px;
+  width: 80%;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .job-card-header {
     flex-direction: column;
     gap: 8px;
   }
-  
+
   .filters {
     flex-direction: column;
   }
-  
+
   .filters input,
-  .filters select {
-    width: 100%;
+  .filters select,
+  .salary-input {
+    width: 100% !important;
+    min-width: unset;
+    flex: unset;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .error-state {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

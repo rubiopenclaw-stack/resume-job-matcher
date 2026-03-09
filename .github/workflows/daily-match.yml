@@ -34,3 +34,14 @@ jobs:
           OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
           OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
         run: python src/main.py
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          MESSAGE_TARGET: ${{ secrets.MESSAGE_TARGET }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d chat_id="${MESSAGE_TARGET}" \
+            -d text="⚠️ *職缺獵人 Workflow 失敗*%0A請至 GitHub Actions 查看日誌" \
+            -d parse_mode="Markdown" || true
