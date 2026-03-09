@@ -16,6 +16,9 @@ function App() {
   const [currentPage, setCurrentPage] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [cacheAge, setCacheAge] = useState(null)
+  const [refreshing, setRefreshing] = useState(false)
+  const [refreshTick, setRefreshTick] = useState(0)
   const debounceTimer = useRef(null)
 
   // 載入收藏（try-catch 防止私密模式報錯）
@@ -77,13 +80,14 @@ function App() {
       .then(data => {
         setJobs(data.jobs || [])
         setTotal(data.total || 0)
+        setCacheAge(data.cache_age_minutes ?? null)
         setLoading(false)
       })
       .catch(() => {
         setError('無法載入職缺，請確認後端服務是否運行')
         setLoading(false)
       })
-  }, [debouncedSearch, selectedSource, salaryMin, salaryMax, currentPage])
+  }, [debouncedSearch, selectedSource, salaryMin, salaryMax, currentPage, refreshTick])
 
   const toggleFavorite = (job) => {
     setFavorites(prev => {
@@ -116,15 +120,42 @@ function App() {
     setCurrentPage(0)
   }
 
+  const handleRefresh = async () => {
+    setRefreshing(true)
+    try {
+      await fetch('/api/jobs/refresh', { method: 'POST' })
+      setCurrentPage(0)
+      setRefreshTick(t => t + 1)
+    } catch {}
+    setRefreshing(false)
+  }
+
   const hasFilters = search || selectedSource || salaryMin || salaryMax
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
   return (
     <div>
       <header className="header">
-        <div className="container">
-          <h1>🎯 職缺獵人</h1>
-          <p>AI-powered 履歷與職缺智能匹配系統</p>
+        <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <h1>🎯 職缺獵人</h1>
+            <p>AI-powered 履歷與職缺智能匹配系統</p>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+            <button
+              className="btn btn-secondary"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              style={{ background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.4)' }}
+            >
+              {refreshing ? '⟳ 更新中...' : '⟳ 更新職缺'}
+            </button>
+            {cacheAge !== null && (
+              <span style={{ fontSize: '12px', opacity: 0.75 }}>
+                快取：{cacheAge} 分鐘前
+              </span>
+            )}
+          </div>
         </div>
       </header>
 

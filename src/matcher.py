@@ -162,10 +162,21 @@ def generate_email_content(resume: Dict, matched_jobs: List[Dict]) -> str:
         score = item['score']
         matched = item['matched_skills']
         
+        salary_min = job.get('salary_min') or 0
+        salary_max = job.get('salary_max') or 0
+        if salary_min and salary_max:
+            salary = f"${salary_min:,} - ${salary_max:,}"
+        elif salary_min:
+            salary = f"${salary_min:,}+"
+        elif salary_max:
+            salary = f"最高 ${salary_max:,}"
+        else:
+            salary = '未公開'
+
         content += f"""
 ## {i}. {job.get('title', 'N/A')}
 - 🏢 公司：{job.get('company', 'N/A')}
-- 💰 薪資：{job.get('salary', '未公開')}
+- 💰 薪資：{salary}
 - 📍 地點：{job.get('location', 'Remote')}
 - 🔗 連結：{job.get('url', '')}
 - 🎯 匹配度：{score}%
