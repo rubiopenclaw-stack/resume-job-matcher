@@ -25,13 +25,17 @@
 
 ### 1. Fork 此專案
 
-### 2. 設定 Secrets
+### 2. 設定 Secrets / 環境變數
 
-| Secret | 說明 | 必填 |
-|--------|------|------|
+| 變數 | 說明 | 必填 |
+|------|------|------|
 | `TELEGRAM_BOT_TOKEN` | Telegram Bot Token | ✅ |
 | `MESSAGE_TARGET` | 你的 Chat ID | ✅ |
-| `OPENAI_API_KEY` | OpenAI API (可選) | 可選 |
+| `OPENAI_API_KEY` | OpenAI API Key | 可選 |
+| `OPENAI_BASE_URL` | 自訂 OpenAI Base URL (預設 api.openai.com) | 可選 |
+| `OPENAI_MODEL` | 使用的模型 (預設 gpt-4o-mini) | 可選 |
+| `NOTIFY_METHOD` | 通知方式：`telegram` 或 `openclaw` (預設 telegram) | 可選 |
+| `CORS_ORIGINS` | 允許的 CORS 來源，逗號分隔 (預設 localhost:5173) | 可選 |
 
 ### 3. 上傳履歷
 
@@ -117,7 +121,8 @@ npm run dev
 
 | 方法 | 端點 | 說明 |
 |------|------|------|
-| GET | `/api/jobs` | 取得職缺列表 (支援搜尋/篩選) |
+| GET | `/api/jobs` | 取得職缺列表 (支援搜尋/篩選/分頁) |
+| GET | `/api/jobs/{id}` | 取得單一職缺詳情 |
 | GET | `/api/jobs/sources` | 取得所有來源 |
 | GET | `/api/jobs/locations` | 取得所有地點 |
 | GET | `/api/jobs/tags` | 取得熱門技能標籤 |
@@ -130,7 +135,10 @@ npm run dev
 | `search` | string | 搜尋關鍵字 (title/company/tags/description) |
 | `source` | string | 篩選來源 (RemoteOK, Remotive) |
 | `location` | string | 篩選地點 |
-| `limit` | int | 回傳數量限制 (預設 50) |
+| `salary_min` | int | 最低薪資過濾 |
+| `salary_max` | int | 最高薪資過濾 |
+| `limit` | int | 回傳數量限制 (預設 50，最大 200) |
+| `offset` | int | 分頁偏移量 (預設 0) |
 | `refresh` | bool | 強制重新整理快取 |
 
 ### 健康檢查
@@ -183,19 +191,21 @@ curl -X POST "http://localhost:8000/api/jobs/refresh"
 ```
 resume-job-matcher/
 ├── src/                    # 後端程式碼
-│   ├── api.py             # FastAPI 伺服器
+│   ├── api.py             # FastAPI 伺服器 (含快取、搜尋、分頁)
 │   ├── fetcher.py         # 職缺抓取 (RemoteOK + Remotive)
-│   ├── matcher.py         # 匹配演算法
+│   ├── matcher.py         # 匹配演算法 (加權評分 + 偏好過濾)
 │   ├── parser.py          # 履歷解析
-│   └── main.py           # 主程式
+│   ├── ai_evaluator.py   # AI 評估 (OpenAI 批量並行評估)
+│   ├── openclaw_notifier.py # Telegram 通知封裝
+│   └── main.py           # 主程式 (排程入口)
 ├── ui/                     # 前端程式碼 (React + Vite)
 │   ├── src/
 │   │   └── App.jsx       # React 主元件
 │   ├── index.html
 │   └── vite.config.js
-├── resumes/                # 履歷存放
-├── jobs/                   # 職缺資料
-└── data/                   # 執行數據
+├── resumes/                # 履歷存放 (.md 格式)
+├── jobs/                   # 職缺資料快取 (latest.json)
+└── tests/                  # 測試套件 (251 tests)
 ```
 
 ---
