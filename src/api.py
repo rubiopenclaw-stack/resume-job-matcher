@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, List, Dict
 import threading
 
-app = FastAPI(title="職缺獵人 API", version="1.2.0")
+app = FastAPI(title="職缺獵人 API", version="1.3.0")
 
 # CORS：預設允許本地開發伺服器，可透過環境變數擴充（如 Cloudflare Tunnel）
 _default_origins = "http://localhost:5173,http://127.0.0.1:5173"
@@ -31,6 +31,7 @@ app.add_middleware(
 
 # 資料路徑
 JOBS_FILE = Path(__file__).parent.parent / "jobs" / "latest.json"
+RESUMES_DIR = Path(__file__).parent.parent / "resumes"
 
 # 快取配置
 CACHE_TTL_MINUTES = 10  # 快取有效時間
@@ -221,6 +222,52 @@ async def get_job(job_id: str):
     if job:
         return job
     raise HTTPException(status_code=404, detail=f"Job '{job_id}' not found")
+
+
+@app.get("/api/resumes")
+async def get_resumes():
+    """取得所有可用履歷檔案"""
+    resumes = []
+    if RESUMES_DIR.exists():
+        for f in RESUMES_DIR.glob("*.md"):
+            if f.name != "README.md":
+                resumes.append(f.name)
+    return {"resumes": sorted(resumes)}
+
+
+@app.get("/api/match")
+async def match_jobs_endpoint(
+    resume: str = Query(..., description="履歷檔名 (e.g. allen.md)"),
+    limit: int = Query(50, ge=1, le=200, description="回傳數量限制"),
+):
+    """取得履歷與職缺的匹配結果（含匹配分數）"""
+    resume_path = RESUMES_DIR / resume
+    if not resume_path.exists() or not resume_path.is_file():
+        raise HTTPException(status_code=404, detail=f"Resume '{resume}' not found")
+
+    try:
+        from src.parser import parse_resume
+        from src.matcher import match_jobs
+    except ModuleNotFoundError:
+        from parser import parse_resume
+        from matcher import match_jobs
+
+    resume_data = parse_resume(str(resume_path))
+    jobs, _ = get_jobs_cache()
+    matches = match_jobs(resume_data, jobs, top_n=limit)
+
+    result_jobs = []
+    for m in matches:
+        job = dict(m["job"])
+        job["match_score"] = m["score"]
+        job["matched_skills"] = m["matched_skills"]
+        result_jobs.append(job)
+
+    return {
+        "total": len(result_jobs),
+        "resume": resume_data.get("name", resume),
+        "jobs": result_jobs,
+    }
 
 
 @app.get("/api/health")

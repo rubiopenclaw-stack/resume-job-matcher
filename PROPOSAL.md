@@ -21,57 +21,27 @@
 
 ---
 
-## 提案一：切換 AI 評估引擎至 Anthropic Claude
+## ~~提案一：切換 AI 評估引擎至 Anthropic Claude~~ ✅ 已完成 (2026-03-10)
 
-**問題描述**
-目前 `ai_evaluator.py` 只支援 OpenAI API。但專案本身是在 Claude Code 環境中運行，且 SKILL_WEIGHTS 中甚至列了 `claude` 為高權重技能，理應優先使用 Claude。
-
-**建議方案**
-- 新增 `ANTHROPIC_API_KEY` 環境變數支援
-- 在 `evaluate_match_with_ai` 中加入 Anthropic Claude 作為 primary，OpenAI 作為 fallback
-- 推薦模型：`claude-haiku-4-5-20251001`（速度快、成本低，適合批量評估）
-
-**預估影響**
-- 評估品質提升（Claude 對中文 prompt 的理解更好）
-- 成本可能更低（Haiku vs GPT-4o-mini）
-- 需要用戶設定 `ANTHROPIC_API_KEY`
+**已完成**：`ai_evaluator.py` 新增 Anthropic Claude 作為 primary evaluator，OpenAI 降為 fallback。
+使用模型：`claude-haiku-4-5-20251001`（可透過 `ANTHROPIC_MODEL` 覆蓋）。
 
 ---
 
-## 提案二：新增職缺來源
+## ~~提案二：新增職缺來源~~ ✅ 已完成 (2026-03-10)
 
-**問題描述**
-目前只有 RemoteOK (~99 職缺) 和 Remotive (~23 職缺)，職缺總量有限。
-
-**建議方案**
-可考慮新增以下免費 API 來源（按可行性排序）：
-
-| 來源 | API | 說明 |
-|------|-----|------|
-| Arbeitnow | `https://arbeitnow.com/api/job-board-api` | 免費，無需 Key，歐洲遠端職缺 |
-| Himalayas | `https://himalayas.app/jobs/api` | 免費，無需 Key，遠端職缺 |
-| We Work Remotely (RSS) | RSS Feed | 可解析 RSS，無需 API Key |
-
-**預估影響**
-- 職缺總量可提升至 300-500 筆
-- 需驗證 API 穩定性（建議先在 RESEARCH.md 補充）
+**已完成**：新增 `ArbeitnowAdapter`（免費，無需 API Key），職缺來源從 2 個擴展至 3 個。
+待評估：Himalayas、We Work Remotely (RSS) 仍可後續新增。
 
 ---
 
-## 提案三：UI 新增履歷匹配分數顯示
+## ~~提案三：UI 新增履歷匹配分數顯示~~ ✅ 已完成 (2026-03-10)
 
-**問題描述**
-前端目前只顯示所有職缺，沒有呈現「與使用者履歷的匹配分數」，失去了後端匹配算法的價值。
-
-**建議方案**
-- 後端新增 `GET /api/match?resume={name}` 端點，回傳帶有匹配分數的職缺列表
-- 前端新增「匹配模式」切換，在職缺卡片上顯示匹配百分比 + 匹配技能標籤
-- 或在現有職缺列表中，當 resume 存在時自動顯示匹配分數
-
-**預估影響**
-- 使用者體驗大幅提升
-- 需要 `resumes/` 目錄中有對應的 `.md` 檔案
-- 後端 API 變動中等
+**已完成**：
+- 後端新增 `GET /api/resumes`（列出履歷）和 `GET /api/match?resume=allen.md`（匹配結果）端點
+- 前端 Header 新增履歷選擇下拉（從 `/api/resumes` 動態載入）
+- 選擇履歷後出現「🎯 匹配結果」分頁，職缺依分數排序
+- 職缺卡片顯示彩色匹配分數 badge（綠/橙/灰）+ 匹配技能列表
 
 ---
 
@@ -84,7 +54,7 @@
 
 ---
 
-## 提案五：fetcher.py 快取 TTL 與 api.py 不一致
+## ~~提案五：fetcher.py 快取 TTL 與 api.py 不一致~~ ✅ 已完成 (2026-03-10)
 
 **問題描述**
 - `fetcher.py:load_jobs()` 的快取 TTL 是 **6 小時**
@@ -92,12 +62,25 @@
 
 兩者不一致，呼叫 `load_jobs()` 的路徑（如 GitHub Actions main.py）會使用到 6 小時前的舊資料，但 API 路徑每 10 分鐘就會刷新。
 
-**建議方案**
-在 `fetcher.py` 頂部定義常數 `FILE_CACHE_TTL_HOURS = 6`，並在 README 說明兩層快取的設計意圖（File Cache vs Memory Cache）。
+**已完成**：新增 `FILE_CACHE_TTL_HOURS = 6` 常數，並加入兩層快取設計說明的 comment。
 
-**預估影響**
-- 純文件修改，無功能變動
-- 幫助未來維護者理解快取設計
+---
+
+## ~~Bug Fix：main.py use_ai 未檢查 ANTHROPIC_API_KEY~~ ✅ 已修復 (2026-03-10)
+
+**問題描述**
+`main.py` 以 `bool(os.environ.get('OPENAI_API_KEY'))` 決定是否啟用 AI 評估，但 `ai_evaluator.py` 已升級為優先使用 Claude。若只設定 `ANTHROPIC_API_KEY`（不設 `OPENAI_API_KEY`），AI 評估會被跳過。
+
+**已修復**：改為 `bool(os.environ.get('ANTHROPIC_API_KEY') or os.environ.get('OPENAI_API_KEY'))`
+
+---
+
+## ~~Bug Fix：parser.py 缺少 RAG/Vector DB 等 AI 技能關鍵字~~ ✅ 已修復 (2026-03-10)
+
+**問題描述**
+`matcher.py` 的 `SKILL_WEIGHTS` 對 `rag`、`vector db`、`pinecone`、`weaviate` 等給予高權重 (3-4x)，但 `parser.py` 的 `SKILL_KEYWORDS` 沒有這些詞。導致履歷提到 RAG 等技術也不會被解析為技能，匹配分數偏低。
+
+**已修復**：在 `parser.py` 的 `SKILL_KEYWORDS` 新增 `rag`、`vector db`、`pinecone`、`weaviate`、`chroma`、`embedding`、`claude`、`gemma`、`llama`、`mistral`、`fine-tuning`、`prompt engineering`。
 
 ---
 
@@ -106,7 +89,9 @@
 | 優先 | 提案 | 原因 | 狀態 |
 |------|------|------|------|
 | ✅ | 提案四（Remote 過濾）| 直接影響匹配品質 | 已完成 |
-| 高 | 提案一（Claude API）| 環境一致性 + 品質 | 待決定 |
-| 中 | 提案二（新來源） | 擴大職缺池 | 待決定 |
-| 低 | 提案三（UI 匹配分數）| 功能完整性 | 待決定 |
-| 低 | 提案五（快取 TTL 文件）| 維護性 | 待決定 |
+| ✅ | 提案一（Claude API）| 環境一致性 + 品質 | 已完成 |
+| ✅ | 提案二（新來源：Arbeitnow）| 擴大職缺池 | 已完成 |
+| ✅ | 提案五（快取 TTL 文件）| 維護性 | 已完成 |
+| ✅ | Bug Fix（use_ai 判斷）| Claude API key 被忽略 | 已完成 |
+| ✅ | Bug Fix（parser 技能庫）| RAG/向量 DB 技能無法被解析 | 已完成 |
+| ✅ | 提案三（UI 匹配分數）| 功能完整性，使用者體驗核心 | 已完成 |

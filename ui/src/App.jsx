@@ -7,6 +7,11 @@ function App() {
   const [total, setTotal] = useState(0)
   const [favorites, setFavorites] = useState([])
   const [sources, setSources] = useState([])
+  const [resumes, setResumes] = useState([])
+  const [selectedResume, setSelectedResume] = useState('')
+  const [matchJobs, setMatchJobs] = useState([])
+  const [matchResumeName, setMatchResumeName] = useState('')
+  const [matchLoading, setMatchLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('jobs')
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -43,6 +48,32 @@ function App() {
       .then(d => setSources(d.sources || []))
       .catch(() => {})
   }, [])
+
+  // 取得履歷列表
+  useEffect(() => {
+    fetch('/api/resumes')
+      .then(r => r.json())
+      .then(d => setResumes(d.resumes || []))
+      .catch(() => {})
+  }, [])
+
+  // 履歷選擇後取得匹配結果
+  useEffect(() => {
+    if (!selectedResume) {
+      setMatchJobs([])
+      setMatchResumeName('')
+      return
+    }
+    setMatchLoading(true)
+    fetch(`/api/match?resume=${encodeURIComponent(selectedResume)}&limit=100`)
+      .then(r => r.json())
+      .then(d => {
+        setMatchJobs(d.jobs || [])
+        setMatchResumeName(d.resume || selectedResume)
+        setMatchLoading(false)
+      })
+      .catch(() => setMatchLoading(false))
+  }, [selectedResume, refreshTick])
 
   // Debounce 搜尋，同時重置頁碼
   useEffect(() => {
@@ -141,7 +172,17 @@ function App() {
             <h1>🎯 職缺獵人</h1>
             <p>AI-powered 履歷與職缺智能匹配系統</p>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+            {resumes.length > 0 && (
+              <select
+                value={selectedResume}
+                onChange={e => setSelectedResume(e.target.value)}
+                style={{ background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '6px', padding: '6px 10px', fontSize: '14px', cursor: 'pointer' }}
+              >
+                <option value="" style={{ color: '#333' }}>🧑 選擇履歷以查看匹配</option>
+                {resumes.map(r => <option key={r} value={r} style={{ color: '#333' }}>{r.replace('.md', '')}</option>)}
+              </select>
+            )}
             <button
               className="btn btn-secondary"
               onClick={handleRefresh}
@@ -188,6 +229,14 @@ function App() {
           >
             🏠 職缺列表
           </button>
+          {selectedResume && (
+            <button
+              className={`tab ${activeTab === 'match' ? 'active' : ''}`}
+              onClick={() => setActiveTab('match')}
+            >
+              🎯 匹配結果 {matchJobs.length > 0 ? `(${matchJobs.length})` : ''}
+            </button>
+          )}
           <button
             className={`tab ${activeTab === 'favorites' ? 'active' : ''}`}
             onClick={() => setActiveTab('favorites')}
@@ -334,6 +383,43 @@ function App() {
           </>
         )}
 
+        {/* 匹配結果頁面 */}
+        {activeTab === 'match' && (
+          <div>
+            {matchLoading && (
+              <div className="job-list">
+                {[...Array(5)].map((_, i) => <SkeletonCard key={i} />)}
+              </div>
+            )}
+            {!matchLoading && matchJobs.length > 0 && (
+              <>
+                <div className="result-info">
+                  <strong>{matchResumeName}</strong> 共匹配 <strong>{matchJobs.length}</strong> 個職缺，依匹配分數排序
+                </div>
+                <div className="job-list">
+                  {matchJobs.map(job => (
+                    <JobCard
+                      key={job.id}
+                      job={job}
+                      isFavorite={isFavorite(job.id)}
+                      onToggleFavorite={() => toggleFavorite(job)}
+                      onTagClick={tag => { setSearch(tag); setActiveTab('jobs') }}
+                      matchScore={job.match_score}
+                      matchedSkills={job.matched_skills}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+            {!matchLoading && matchJobs.length === 0 && (
+              <div className="empty-state">
+                <h3>沒有找到匹配職缺</h3>
+                <p>試試更新職缺資料，或調整履歷中的技能</p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* 收藏頁面 */}
         {activeTab === 'favorites' && (
           <div className="favorites-list">
@@ -394,8 +480,9 @@ function SkeletonCard() {
 }
 
 // 職缺卡片元件
-function JobCard({ job, isFavorite, onToggleFavorite, onTagClick }) {
+function JobCard({ job, isFavorite, onToggleFavorite, onTagClick, matchScore, matchedSkills }) {
   const salary = formatSalary(job.salary_min, job.salary_max)
+  const scoreColor = matchScore >= 60 ? '#22c55e' : matchScore >= 35 ? '#f59e0b' : '#94a3b8'
 
   return (
     <div className="job-card">
@@ -404,13 +491,26 @@ function JobCard({ job, isFavorite, onToggleFavorite, onTagClick }) {
           <h3 className="job-card-title">{job.title}</h3>
           <p className="job-card-company">{job.company}</p>
         </div>
-        <span className="job-card-source">{job.source}</span>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+          {matchScore !== undefined && (
+            <span style={{ background: scoreColor, color: 'white', borderRadius: '12px', padding: '2px 10px', fontSize: '13px', fontWeight: 600 }}>
+              {matchScore}% 匹配
+            </span>
+          )}
+          <span className="job-card-source">{job.source}</span>
+        </div>
       </div>
 
       <div className="job-card-body">
         <span className="job-card-info">📍 {job.location || 'Remote'}</span>
         {salary && <span className="job-card-info salary-info">💰 {salary}</span>}
       </div>
+
+      {matchedSkills && matchedSkills.length > 0 && (
+        <div style={{ marginBottom: '6px', fontSize: '12px', color: '#64748b' }}>
+          ✨ 匹配技能：{matchedSkills.slice(0, 6).join(' · ')}
+        </div>
+      )}
 
       <div className="job-card-tags">
         {job.tags?.slice(0, 8).map(tag => (
