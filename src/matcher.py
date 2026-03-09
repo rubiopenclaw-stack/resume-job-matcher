@@ -75,11 +75,10 @@ def calculate_match_score(resume_skills: List[str], job: Dict, job_text: str = N
 
     score = matched_weight / total_weight
 
-    # 標題加成
+    # 標題加成：只要任一技能出現在標題中就加一次 bonus
     title = job.get('title', '').lower()
-    for skill in resume_skills:
-        if skill.lower() in title:
-            score += 0.15
+    if any(skill.lower() in title for skill in resume_skills):
+        score += 0.15
 
     return min(score, 1.0)
 
@@ -101,19 +100,23 @@ def filter_by_preference(resume: Dict, jobs: List[Dict]) -> List[Dict]:
         location = job.get('location', '').lower()
         title = job.get('title', '').lower()
 
-        # Remote 職缺：通過角色過濾，但 bypass 地點過濾
-        if 'remote' in location:
-            role_match = not preferred_roles or any(role in title for role in preferred_roles)
-            if role_match:
-                filtered.append(job)
-            continue
+        # 角色匹配：所有職缺都需通過角色過濾（無論是否 Remote）
         role_match = not preferred_roles or any(role in title for role in preferred_roles)
+        if not role_match:
+            continue
+
+        # Remote 職缺： bypass 地點過濾
+        if 'remote' in location:
+            filtered.append(job)
+            continue
+
+        # 非 Remote 職缺：需通過地點過濾
         location_match = (
             not preferred_locations
             or any(loc in location for loc in preferred_locations if loc != 'remote')
         )
 
-        if role_match and location_match:
+        if location_match:
             filtered.append(job)
 
     return filtered

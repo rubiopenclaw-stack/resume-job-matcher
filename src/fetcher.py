@@ -247,7 +247,9 @@ def load_jobs(filepath: Path = None) -> List[Dict]:
     fetched_at = datetime.fromisoformat(data['fetched_at'])
     if datetime.now() - fetched_at > timedelta(hours=FILE_CACHE_TTL_HOURS):
         print("Cache expired, refetching...")
-        return fetch_all_jobs()
+        jobs = fetch_all_jobs()
+        save_jobs(jobs)  # Save the fresh data to avoid repeated refetch
+        return jobs
 
     return data.get('jobs', [])
 
