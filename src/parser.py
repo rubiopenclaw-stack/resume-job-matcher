@@ -28,6 +28,9 @@ SKILL_KEYWORDS = {
     'git', 'github', 'rest api', 'graphql', 'microservices', 'agile', 'scrum',
     # AI Agent 相關
     'agent', 'agentic', 'langchain', 'autogen', 'crewai', 'tool use', 'multi-step',
+    # AI 進階技術
+    'rag', 'vector db', 'pinecone', 'weaviate', 'chroma', 'embedding',
+    'claude', 'gemma', 'llama', 'mistral', 'fine-tuning', 'prompt engineering',
 }
 
 # 角色關鍵字

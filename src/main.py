@@ -78,8 +78,8 @@ def main():
             print(f"   ⚠️ No matches")
             continue
         
-        # AI 評估（需要 OPENAI_API_KEY 才能啟用）
-        use_ai = bool(os.environ.get('OPENAI_API_KEY'))
+        # AI 評估（需要 ANTHROPIC_API_KEY 或 OPENAI_API_KEY 才能啟用）
+        use_ai = bool(os.environ.get('ANTHROPIC_API_KEY') or os.environ.get('OPENAI_API_KEY'))
         
         if use_ai:
             print(f"   🤖 Running AI evaluation...")

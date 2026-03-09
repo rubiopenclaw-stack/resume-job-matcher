@@ -1,5 +1,6 @@
 """
 AI 評估器 - 增強版
+支援：Anthropic Claude（優先）、OpenAI（fallback）
 """
 
 import os
@@ -10,14 +11,38 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List, Optional
 
 try:
+    import anthropic
+    ANTHROPIC_AVAILABLE = True
+except ImportError:
+    ANTHROPIC_AVAILABLE = False
+
+try:
     import openai
     OPENAI_AVAILABLE = True
 except ImportError:
     OPENAI_AVAILABLE = False
 
-# Singleton client，避免每次呼叫都建立新連線池
+# Singleton clients，避免每次呼叫都建立新連線池
+_anthropic_client = None
 _openai_client = None
 _client_lock = threading.Lock()
+
+
+def get_anthropic_client():
+    """取得 Anthropic client（singleton）"""
+    global _anthropic_client
+
+    if not ANTHROPIC_AVAILABLE:
+        return None
+
+    api_key = os.environ.get('ANTHROPIC_API_KEY')
+    if not api_key:
+        return None
+
+    with _client_lock:
+        if _anthropic_client is None:
+            _anthropic_client = anthropic.Anthropic(api_key=api_key)
+        return _anthropic_client
 
 
 def get_openai_client():
@@ -38,23 +63,16 @@ def get_openai_client():
         return _openai_client
 
 
-def evaluate_match_with_ai(resume: Dict, job: Dict, model: str = None) -> Dict:
-    """用 AI 評估履歷與職缺的匹配度"""
-    client = get_openai_client()
-    if not client:
-        return {'reason': 'AI not available', 'strengths': [], 'gaps': [], 'ai_score': None}
-    
-    model = model or os.environ.get('OPENAI_MODEL', 'gpt-4o-mini')
-    
+def _build_prompt(resume: Dict, job: Dict) -> str:
+    """建立評估 prompt"""
     resume_skills = ', '.join(resume.get('skills', []))
     job_title = job.get('title', '')
     job_company = job.get('company', '')
     job_description = job.get('description', '')[:1500]
     job_tags = ', '.join(job.get('tags', []))
     job_source = job.get('source', '')
-    
-    # 增強版 prompt
-    prompt = f"""你是一個專業的履歷評估專家。候選人正在找工作，請評估他與以下職缺的匹配程度。
+
+    return f"""你是一個專業的履歷評估專家。候選人正在找工作，請評估他與以下職缺的匹配程度。
 
 ## 職缺資訊
 - 職位：{job_title}
@@ -78,41 +96,79 @@ def evaluate_match_with_ai(resume: Dict, job: Dict, model: str = None) -> Dict:
 
 只回覆 JSON。"""
 
+
+def _parse_ai_response(content: str) -> Dict:
+    """解析 AI 回應的 JSON"""
+    decoder = json.JSONDecoder()
+    for i, char in enumerate(content):
+        if char == '{':
+            try:
+                result, _ = decoder.raw_decode(content, i)
+                return result
+            except json.JSONDecodeError:
+                continue
+    raise json.JSONDecodeError("No JSON object found", content, 0)
+
+
+def evaluate_match_with_ai(resume: Dict, job: Dict, model: str = None) -> Dict:
+    """用 AI 評估履歷與職缺的匹配度（優先使用 Claude，fallback 到 OpenAI）"""
+    prompt = _build_prompt(resume, job)
+
+    # 優先嘗試 Anthropic Claude
+    anthropic_client = get_anthropic_client()
+    if anthropic_client:
+        claude_model = model or os.environ.get('ANTHROPIC_MODEL', 'claude-haiku-4-5-20251001')
+        try:
+            response = anthropic_client.messages.create(
+                model=claude_model,
+                max_tokens=600,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            content = response.content[0].text.strip()
+            result = _parse_ai_response(content)
+            return {
+                'reason': result.get('match_reason', ''),
+                'strengths': result.get('strengths', []),
+                'gaps': result.get('gaps', []),
+                'ai_score': result.get('ai_score'),
+                'model': claude_model,
+            }
+        except json.JSONDecodeError as e:
+            print(f"Claude JSON parse error: {e}")
+        except Exception as e:
+            print(f"Claude evaluation error: {e}, falling back to OpenAI...")
+
+    # Fallback：OpenAI
+    openai_client = get_openai_client()
+    if not openai_client:
+        return {'reason': 'AI not available', 'strengths': [], 'gaps': [], 'ai_score': None}
+
+    openai_model = model or os.environ.get('OPENAI_MODEL', 'gpt-4o-mini')
+
     try:
-        response = client.chat.completions.create(
-            model=model,
+        response = openai_client.chat.completions.create(
+            model=openai_model,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.3,
             max_tokens=600
         )
-        
+
         content = response.choices[0].message.content.strip()
 
-        # 擷取第一個合法 JSON 物件，避免 greedy regex 跨多個物件
-        decoder = json.JSONDecoder()
-        result = None
-        for i, char in enumerate(content):
-            if char == '{':
-                try:
-                    result, _ = decoder.raw_decode(content, i)
-                    break
-                except json.JSONDecodeError:
-                    continue
-        if result is None:
-            raise json.JSONDecodeError("No JSON object found", content, 0)
-        
+        result = _parse_ai_response(content)
         return {
             'reason': result.get('match_reason', ''),
             'strengths': result.get('strengths', []),
             'gaps': result.get('gaps', []),
-            'ai_score': result.get('ai_score')
+            'ai_score': result.get('ai_score'),
+            'model': openai_model,
         }
-        
+
     except json.JSONDecodeError as e:
-        print(f"JSON parse error: {e}")
+        print(f"OpenAI JSON parse error: {e}")
         return {'reason': 'AI 評估失敗', 'strengths': [], 'gaps': [], 'ai_score': None}
     except Exception as e:
-        print(f"AI evaluation error: {e}")
+        print(f"OpenAI evaluation error: {e}")
         return {'reason': 'AI 評估失敗', 'strengths': [], 'gaps': [], 'ai_score': None}
 
 

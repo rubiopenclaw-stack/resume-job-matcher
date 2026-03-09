@@ -1,6 +1,6 @@
 """
 職缺獲取器 - 多來源 + Adapter 結構
-支持：RemoteOK, Remotive
+支持：RemoteOK, Remotive, Arbeitnow
 """
 
 import json
@@ -13,6 +13,11 @@ from datetime import datetime, timedelta
 
 # 絕對路徑，不受工作目錄影響
 JOBS_DIR = Path(__file__).parent.parent / 'jobs'
+
+# 兩層快取設計：
+#   File Cache (fetcher.py): 6 小時，供 GitHub Actions main.py 使用
+#   Memory Cache (api.py): 10 分鐘，供 FastAPI 端點使用，避免頻繁讀磁碟
+FILE_CACHE_TTL_HOURS = 6
 
 
 # ========== Base Adapter ==========
@@ -100,6 +105,46 @@ class RemotiveAdapter(JobSourceAdapter):
             return []
 
 
+# ========== Arbeitnow Adapter ==========
+class ArbeitnowAdapter(JobSourceAdapter):
+    """Arbeitnow 職缺來源（免費，無需 API Key，歐洲遠端職缺）"""
+    name = "Arbeitnow"
+
+    def fetch(self, limit: int = 50) -> List[Dict]:
+        try:
+            response = requests.get(
+                "https://arbeitnow.com/api/job-board-api",
+                timeout=20
+            )
+
+            if response.status_code != 200:
+                return []
+
+            data = response.json()
+            jobs = data.get('data', [])
+
+            filtered = []
+            for job in jobs:
+                if job.get('title') and job.get('company_name'):
+                    normalized = self.normalize_job({
+                        'id': job.get('slug', ''),
+                        'title': job.get('title', ''),
+                        'company': job.get('company_name', ''),
+                        'url': job.get('url', ''),
+                        'description': job.get('description', ''),
+                        'tags': job.get('tags', []),
+                        'location': 'Remote' if job.get('remote') else job.get('location', ''),
+                        'salary_min': 0,
+                        'salary_max': 0,
+                    })
+                    filtered.append(normalized)
+
+            return filtered[:limit]
+        except Exception as e:
+            print(f"  {self.name} error: {e}")
+            return []
+
+
 # ========== Job Fetcher (工廠模式) ==========
 class JobFetcher:
     """職缺獲取器工廠"""
@@ -108,6 +153,7 @@ class JobFetcher:
     ADAPTERS: Dict[str, JobSourceAdapter] = {
         'RemoteOK': RemoteOKAdapter(),
         'Remotive': RemotiveAdapter(),
+        'Arbeitnow': ArbeitnowAdapter(),
     }
     
     @classmethod
@@ -199,7 +245,7 @@ def load_jobs(filepath: Path = None) -> List[Dict]:
         data = json.load(f)
 
     fetched_at = datetime.fromisoformat(data['fetched_at'])
-    if datetime.now() - fetched_at > timedelta(hours=6):
+    if datetime.now() - fetched_at > timedelta(hours=FILE_CACHE_TTL_HOURS):
         print("Cache expired, refetching...")
         return fetch_all_jobs()
 
