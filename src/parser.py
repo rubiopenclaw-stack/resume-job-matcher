@@ -29,8 +29,24 @@ SKILL_KEYWORDS = {
     # AI Agent 相關
     'agent', 'agentic', 'langchain', 'autogen', 'crewai', 'tool use', 'multi-step',
     # AI 進階技術
-    'rag', 'vector db', 'pinecone', 'weaviate', 'chroma', 'embedding',
+    'rag', 'vector db', 'pinecone', 'weaviate', 'chroma', 'embedding', 'embeddings',
     'claude', 'gemma', 'llama', 'mistral', 'fine-tuning', 'prompt engineering',
+    # AI 模型
+    'deepseek', 'gemini', 'grok', 'minimax', 'megatron', 'o1', 'o3', 'o4',
+    # AI 搜尋/推理工具
+    'deepsearch', 'operator', 'haystack', 'openui', 'jina', 'reader',
+    # AI 編碼 IDE/編輯器
+    'cursor', 'windsurf', 'zed', 'zeditor', 'hyper', 'warptime',
+    # AI 編碼助手
+    'copilot', 'copilot-x', 'cody', 'tabnine', 'blackbox', 'amazon-q', 'aws-q',
+    'gemini-code-assist', 'sourcegraph', 'qodo',
+    # AI 程式生成工具
+    'devin', 'v0', 'bolt', 'replit', 'replite', 'lovable', 'loveable', 'anysphere', 'cline',
+    # 設計/生產力工具
+    'figma', 'framer', 'raycast', 'noteable', 'excel', 'observable', 'julius',
+    # 其他新興 AI 工具
+    'roo', 'dot', 'saas', 'aisle', 'bolaval', 'sagehood', 'ivy', 'reverie',
+    'goover', 'quey', 'ayfie', 'quillman', 'airtry', 'continents', 'polynomial', 'immutable',
 }
 
 # 角色關鍵字
