@@ -47,6 +47,8 @@ SKILL_KEYWORDS = {
     # 其他新興 AI 工具
     'roo', 'dot', 'saas', 'aisle', 'bolaval', 'sagehood', 'ivy', 'reverie',
     'goover', 'quey', 'ayfie', 'quillman', 'airtry', 'continents', 'polynomial', 'immutable',
+    # AI 模型平台
+    'together.ai', 'anyscale', 'infergo', 'fireworks', 'replicate', 'modal', 'runpod',
 }
 
 # 角色關鍵字

@@ -239,3 +239,47 @@ class TestGetAllResumes:
         (tmp_path / 'notes.txt').write_text('not a resume')
         result = get_all_resumes(str(tmp_path))
         assert len(result) == 1
+
+
+# ===== Tests: AI 模型平台關鍵字 =====
+
+class TestAIModelPlatformKeywords:
+
+    def test_together_ai_detected(self):
+        result = extract_skills("We use together.ai for inference")
+        assert 'together.ai' in result
+
+    def test_anyscale_detected(self):
+        result = extract_skills("Deployed models on Anyscale platform")
+        assert 'anyscale' in result
+
+    def test_fireworks_detected(self):
+        result = extract_skills("Fast inference via Fireworks API")
+        assert 'fireworks' in result
+
+    def test_replicate_detected(self):
+        result = extract_skills("Hosted image generation models on Replicate")
+        assert 'replicate' in result
+
+    def test_modal_detected(self):
+        result = extract_skills("Serverless GPU workloads with Modal")
+        assert 'modal' in result
+
+    def test_runpod_detected(self):
+        result = extract_skills("Training runs on RunPod GPU cloud")
+        assert 'runpod' in result
+
+    def test_infergo_detected(self):
+        result = extract_skills("Low-latency serving via infergo")
+        assert 'infergo' in result
+
+    def test_multiple_platforms_detected(self):
+        result = extract_skills("Experience with together.ai, anyscale, and fireworks for LLM inference")
+        assert 'together.ai' in result
+        assert 'anyscale' in result
+        assert 'fireworks' in result
+
+    def test_platform_keywords_in_skill_keywords_set(self):
+        platforms = {'together.ai', 'anyscale', 'infergo', 'fireworks', 'replicate', 'modal', 'runpod'}
+        for platform in platforms:
+            assert platform in SKILL_KEYWORDS, f"'{platform}' missing from SKILL_KEYWORDS"
