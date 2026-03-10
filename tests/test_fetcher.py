@@ -16,6 +16,9 @@ from src.fetcher import (
     JobSourceAdapter,
     RemoteOKAdapter,
     RemotiveAdapter,
+    ArbeitnowAdapter,
+    JobicyAdapter,
+    HimalayasAdapter,
     JobFetcher,
     fetch_all_jobs,
     save_jobs,
@@ -351,3 +354,241 @@ class TestSaveLoadJobs:
             mock_fetch.assert_called_once()
         assert len(loaded) == 1
         assert loaded[0]['id'] == '99'
+
+
+# ===== Tests: JobicyAdapter =====
+
+SAMPLE_JOBICY_RESPONSE = {
+    "jobs": [
+        {
+            "id": 501,
+            "url": "https://jobicy.com/jobs/501-senior-python",
+            "jobTitle": "Senior Python Engineer",
+            "companyName": "DataCo",
+            "jobDescription": "Python engineering role worldwide",
+            "jobExcerpt": "Python remote job",
+            "jobIndustry": ["tech"],
+            "jobType": ["full-time"],
+            "jobGeo": "Worldwide",
+            "jobLevel": "Senior",
+            "annualSalaryMin": 90000,
+            "annualSalaryMax": 130000,
+            "salaryCurrency": "USD",
+        },
+        {
+            "id": 502,
+            "url": "https://jobicy.com/jobs/502-frontend",
+            "jobTitle": "Frontend Developer",
+            "companyName": "WebAgency",
+            "jobDescription": "React developer needed",
+            "jobExcerpt": "React remote",
+            "jobIndustry": ["tech"],
+            "jobType": ["full-time"],
+            "jobGeo": "USA Only",
+            "jobLevel": "Mid",
+            "annualSalaryMin": 0,
+            "annualSalaryMax": 0,
+            "salaryCurrency": "USD",
+        },
+    ]
+}
+
+
+class TestJobicyAdapter:
+
+    def _mock_jobicy(self):
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = copy.deepcopy(SAMPLE_JOBICY_RESPONSE)
+        return mock_resp
+
+    def test_fetch_returns_list(self):
+        adapter = JobicyAdapter()
+        with patch('src.fetcher.requests.get', return_value=self._mock_jobicy()):
+            jobs = adapter.fetch(limit=10)
+        assert isinstance(jobs, list)
+
+    def test_fetch_returns_correct_count(self):
+        adapter = JobicyAdapter()
+        with patch('src.fetcher.requests.get', return_value=self._mock_jobicy()):
+            jobs = adapter.fetch(limit=10)
+        assert len(jobs) == 2
+
+    def test_fetch_maps_job_title(self):
+        adapter = JobicyAdapter()
+        with patch('src.fetcher.requests.get', return_value=self._mock_jobicy()):
+            jobs = adapter.fetch(limit=10)
+        assert jobs[0]['title'] == 'Senior Python Engineer'
+
+    def test_fetch_maps_company_name(self):
+        adapter = JobicyAdapter()
+        with patch('src.fetcher.requests.get', return_value=self._mock_jobicy()):
+            jobs = adapter.fetch(limit=10)
+        assert jobs[0]['company'] == 'DataCo'
+
+    def test_fetch_sets_salary_fields(self):
+        adapter = JobicyAdapter()
+        with patch('src.fetcher.requests.get', return_value=self._mock_jobicy()):
+            jobs = adapter.fetch(limit=10)
+        assert jobs[0]['salary_min'] == 90000
+        assert jobs[0]['salary_max'] == 130000
+
+    def test_fetch_sets_source(self):
+        adapter = JobicyAdapter()
+        with patch('src.fetcher.requests.get', return_value=self._mock_jobicy()):
+            jobs = adapter.fetch(limit=10)
+        for job in jobs:
+            assert job['source'] == 'Jobicy'
+
+    def test_fetch_returns_empty_on_non_200(self):
+        adapter = JobicyAdapter()
+        mock_resp = MagicMock()
+        mock_resp.status_code = 503
+        with patch('src.fetcher.requests.get', return_value=mock_resp):
+            jobs = adapter.fetch()
+        assert jobs == []
+
+    def test_fetch_returns_empty_on_exception(self):
+        adapter = JobicyAdapter()
+        with patch('src.fetcher.requests.get', side_effect=Exception('timeout')):
+            jobs = adapter.fetch()
+        assert jobs == []
+
+    def test_fetch_respects_limit(self):
+        adapter = JobicyAdapter()
+        with patch('src.fetcher.requests.get', return_value=self._mock_jobicy()):
+            jobs = adapter.fetch(limit=1)
+        assert len(jobs) <= 1
+
+    def test_fetch_includes_tags_from_industry(self):
+        adapter = JobicyAdapter()
+        with patch('src.fetcher.requests.get', return_value=self._mock_jobicy()):
+            jobs = adapter.fetch(limit=10)
+        assert 'tech' in jobs[0]['tags']
+
+
+# ===== Tests: HimalayasAdapter =====
+
+SAMPLE_HIMALAYAS_RESPONSE = {
+    "jobs": [
+        {
+            "id": "him-1",
+            "title": "Staff ML Engineer",
+            "company": {"name": "AIStartup"},
+            "url": "https://himalayas.app/jobs/him-1",
+            "description": "Machine learning engineer worldwide",
+            "tags": ["python", "ml", "tensorflow"],
+            "location": "Remote",
+            "salary": {"min": 120000, "max": 180000, "currency": "USD"},
+        },
+        {
+            "id": "him-2",
+            "title": "DevOps Engineer",
+            "company": {"name": "CloudFirm"},
+            "url": "https://himalayas.app/jobs/him-2",
+            "description": "Cloud DevOps role",
+            "tags": ["aws", "docker", "kubernetes"],
+            "location": "Remote",
+            "salary": None,
+        },
+    ],
+    "total": 2,
+}
+
+
+class TestHimalayasAdapter:
+
+    def _mock_himalayas(self, last_page=True):
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        data = copy.deepcopy(SAMPLE_HIMALAYAS_RESPONSE)
+        if last_page:
+            data['jobs'] = data['jobs']  # < page_size triggers break
+        mock_resp.json.return_value = data
+        return mock_resp
+
+    def test_fetch_returns_list(self):
+        adapter = HimalayasAdapter()
+        with patch('src.fetcher.requests.get', return_value=self._mock_himalayas()):
+            jobs = adapter.fetch(limit=10)
+        assert isinstance(jobs, list)
+
+    def test_fetch_returns_correct_count(self):
+        adapter = HimalayasAdapter()
+        with patch('src.fetcher.requests.get', return_value=self._mock_himalayas()):
+            jobs = adapter.fetch(limit=10)
+        assert len(jobs) == 2
+
+    def test_fetch_maps_title(self):
+        adapter = HimalayasAdapter()
+        with patch('src.fetcher.requests.get', return_value=self._mock_himalayas()):
+            jobs = adapter.fetch(limit=10)
+        assert jobs[0]['title'] == 'Staff ML Engineer'
+
+    def test_fetch_maps_company_name_from_dict(self):
+        adapter = HimalayasAdapter()
+        with patch('src.fetcher.requests.get', return_value=self._mock_himalayas()):
+            jobs = adapter.fetch(limit=10)
+        assert jobs[0]['company'] == 'AIStartup'
+
+    def test_fetch_maps_salary(self):
+        adapter = HimalayasAdapter()
+        with patch('src.fetcher.requests.get', return_value=self._mock_himalayas()):
+            jobs = adapter.fetch(limit=10)
+        assert jobs[0]['salary_min'] == 120000
+        assert jobs[0]['salary_max'] == 180000
+
+    def test_fetch_handles_null_salary(self):
+        adapter = HimalayasAdapter()
+        with patch('src.fetcher.requests.get', return_value=self._mock_himalayas()):
+            jobs = adapter.fetch(limit=10)
+        assert jobs[1]['salary_min'] == 0
+        assert jobs[1]['salary_max'] == 0
+
+    def test_fetch_sets_source(self):
+        adapter = HimalayasAdapter()
+        with patch('src.fetcher.requests.get', return_value=self._mock_himalayas()):
+            jobs = adapter.fetch(limit=10)
+        for job in jobs:
+            assert job['source'] == 'Himalayas'
+
+    def test_fetch_includes_tags(self):
+        adapter = HimalayasAdapter()
+        with patch('src.fetcher.requests.get', return_value=self._mock_himalayas()):
+            jobs = adapter.fetch(limit=10)
+        assert 'python' in jobs[0]['tags']
+
+    def test_fetch_returns_empty_on_non_200(self):
+        adapter = HimalayasAdapter()
+        mock_resp = MagicMock()
+        mock_resp.status_code = 500
+        with patch('src.fetcher.requests.get', return_value=mock_resp):
+            jobs = adapter.fetch()
+        assert jobs == []
+
+    def test_fetch_returns_empty_on_exception(self):
+        adapter = HimalayasAdapter()
+        with patch('src.fetcher.requests.get', side_effect=Exception('timeout')):
+            jobs = adapter.fetch()
+        assert jobs == []
+
+    def test_fetch_respects_limit(self):
+        adapter = HimalayasAdapter()
+        with patch('src.fetcher.requests.get', return_value=self._mock_himalayas()):
+            jobs = adapter.fetch(limit=1)
+        assert len(jobs) <= 1
+
+
+# ===== Tests: All adapters registered in JobFetcher =====
+
+class TestAllAdaptersRegistered:
+
+    def test_jobicy_in_adapters(self):
+        assert 'Jobicy' in JobFetcher.ADAPTERS
+
+    def test_himalayas_in_adapters(self):
+        assert 'Himalayas' in JobFetcher.ADAPTERS
+
+    def test_all_five_sources_registered(self):
+        expected = {'RemoteOK', 'Remotive', 'Arbeitnow', 'Jobicy', 'Himalayas'}
+        assert expected.issubset(set(JobFetcher.ADAPTERS.keys()))

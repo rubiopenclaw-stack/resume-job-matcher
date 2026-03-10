@@ -1,6 +1,6 @@
 """
 職缺獲取器 - 多來源 + Adapter 結構
-支持：RemoteOK, Remotive, Arbeitnow
+支持：RemoteOK, Remotive, Arbeitnow, Jobicy, Himalayas
 """
 
 import json
@@ -145,6 +145,110 @@ class ArbeitnowAdapter(JobSourceAdapter):
             return []
 
 
+# ========== Jobicy Adapter ==========
+class JobicyAdapter(JobSourceAdapter):
+    """Jobicy 職缺來源（免費，無需 API Key，全球遠端職缺含薪資資訊）"""
+    name = "Jobicy"
+
+    def fetch(self, limit: int = 50) -> List[Dict]:
+        try:
+            response = requests.get(
+                f"https://jobicy.com/api/v2/remote-jobs?count={limit}",
+                timeout=20
+            )
+            if response.status_code != 200:
+                return []
+
+            data = response.json()
+            jobs = data.get('jobs', [])
+
+            filtered = []
+            for job in jobs:
+                if job.get('jobTitle') and job.get('companyName'):
+                    tags = []
+                    if job.get('jobIndustry'):
+                        tags += job['jobIndustry'] if isinstance(job['jobIndustry'], list) else [job['jobIndustry']]
+                    if job.get('jobType'):
+                        tags += job['jobType'] if isinstance(job['jobType'], list) else [job['jobType']]
+
+                    normalized = self.normalize_job({
+                        'id': str(job.get('id', '')),
+                        'title': job.get('jobTitle', ''),
+                        'company': job.get('companyName', ''),
+                        'url': job.get('url', ''),
+                        'description': job.get('jobDescription', job.get('jobExcerpt', '')),
+                        'tags': [t.lower() for t in tags if t],
+                        'location': job.get('jobGeo', 'Worldwide'),
+                        'salary_min': job.get('annualSalaryMin') or 0,
+                        'salary_max': job.get('annualSalaryMax') or 0,
+                    })
+                    filtered.append(normalized)
+
+            return filtered[:limit]
+        except Exception as e:
+            print(f"  {self.name} error: {e}")
+            return []
+
+
+# ========== Himalayas Adapter ==========
+class HimalayasAdapter(JobSourceAdapter):
+    """Himalayas 職缺來源（免費，無需 API Key，每次最多 20 筆，自動分頁）"""
+    name = "Himalayas"
+
+    def fetch(self, limit: int = 50) -> List[Dict]:
+        try:
+            all_jobs = []
+            offset = 0
+            page_size = 20  # Himalayas API 最大每頁 20
+
+            while len(all_jobs) < limit:
+                response = requests.get(
+                    f"https://himalayas.app/jobs/api?limit={page_size}&offset={offset}",
+                    timeout=20
+                )
+                if response.status_code != 200:
+                    break
+
+                data = response.json()
+                jobs = data.get('jobs', [])
+                if not jobs:
+                    break
+
+                for job in jobs:
+                    company = job.get('company', {})
+                    company_name = company.get('name', '') if isinstance(company, dict) else str(company)
+                    title = job.get('title', '')
+                    if not title or not company_name:
+                        continue
+
+                    salary = job.get('salary', {}) or {}
+                    tags = job.get('tags', [])
+                    if isinstance(tags, list):
+                        tags = [t.lower() if isinstance(t, str) else str(t).lower() for t in tags]
+
+                    normalized = self.normalize_job({
+                        'id': str(job.get('id', '')),
+                        'title': title,
+                        'company': company_name,
+                        'url': job.get('url', ''),
+                        'description': job.get('description', ''),
+                        'tags': tags,
+                        'location': job.get('location', 'Remote'),
+                        'salary_min': salary.get('min') or 0,
+                        'salary_max': salary.get('max') or 0,
+                    })
+                    all_jobs.append(normalized)
+
+                offset += page_size
+                if len(jobs) < page_size:
+                    break
+
+            return all_jobs[:limit]
+        except Exception as e:
+            print(f"  {self.name} error: {e}")
+            return []
+
+
 # ========== Job Fetcher (工廠模式) ==========
 class JobFetcher:
     """職缺獲取器工廠"""
@@ -154,6 +258,8 @@ class JobFetcher:
         'RemoteOK': RemoteOKAdapter(),
         'Remotive': RemotiveAdapter(),
         'Arbeitnow': ArbeitnowAdapter(),
+        'Jobicy': JobicyAdapter(),
+        'Himalayas': HimalayasAdapter(),
     }
     
     @classmethod

@@ -4,7 +4,8 @@
 
 ## 功能特色
 
-- 📡 **多來源職缺** - RemoteOK + Remotive 自動抓取
+- 📡 **多來源職缺** - RemoteOK, Remotive, Arbeitnow, Jobicy, Himalayas 五大平台自動抓取
+- 📤 **上傳履歷** - 支援拖曳上傳 .md/.txt/.pdf，自動解析技能並即時匹配職缺
 - 🧠 **雙 AI 評估** - Claude（優先）/ OpenAI（fallback）分析匹配原因、優勢、缺口
 - ⚖️ **加權匹配演算法** - 根據技能權重計算匹配度
 - 🔍 **偏好過濾** - 根據角色、地點偏好篩選，Remote 職缺永遠保留
@@ -21,7 +22,7 @@
 | 前端 | React + Vite |
 | 後端 | FastAPI (Python) |
 | AI 評估 | Anthropic Claude / OpenAI（fallback）|
-| 職缺來源 | RemoteOK, Remotive |
+| 職缺來源 | RemoteOK, Remotive, Arbeitnow, Jobicy, Himalayas |
 | 資料格式 | JSON |
 
 ## 快速開始
@@ -130,13 +131,14 @@ cd resume-job-matcher/ui && npm run dev
 |------|------|------|
 | GET | `/api/resumes` | 取得所有可用履歷檔案 |
 | GET | `/api/match?resume={檔名}` | 取得履歷與職缺匹配結果（含匹配分數） |
+| POST | `/api/upload-resume` | 上傳履歷檔案（.md/.txt/.pdf），自動解析並回傳匹配職缺 |
 
 ### 查詢參數（`/api/jobs`）
 
 | 參數 | 類型 | 說明 |
 |------|------|------|
 | `search` | string | 搜尋關鍵字 (title/company/tags/description) |
-| `source` | string | 篩選來源 (RemoteOK, Remotive) |
+| `source` | string | 篩選來源 (RemoteOK, Remotive, Arbeitnow, Jobicy, Himalayas) |
 | `location` | string | 篩選地點 |
 | `salary_min` | int | 最低薪資過濾 |
 | `salary_max` | int | 最高薪資過濾 |
@@ -168,6 +170,10 @@ curl http://localhost:8000/api/resumes
 # 取得 allen.md 的匹配結果
 curl "http://localhost:8000/api/match?resume=allen.md&limit=20"
 
+# 上傳履歷檔案（.md/.txt/.pdf）
+curl -X POST "http://localhost:8000/api/upload-resume" \
+  -F "file=@your_resume.pdf"
+
 # 強制刷新職缺資料
 curl -X POST "http://localhost:8000/api/jobs/refresh"
 ```
@@ -175,6 +181,13 @@ curl -X POST "http://localhost:8000/api/jobs/refresh"
 ---
 
 ## 最新功能
+
+### 📤 上傳履歷即時匹配
+
+在「上傳履歷」分頁拖曳或點選上傳 `.md`、`.txt`、`.pdf` 格式履歷：
+- 自動解析技能關鍵字（Python、React、Docker 等 50+ 技術）
+- 自動推斷職位偏好（Engineer、Manager、Designer 等）
+- 即時回傳 Top 50 匹配職缺，顯示匹配分數與匹配技能
 
 ### 🎯 UI 即時匹配
 
@@ -213,22 +226,36 @@ AI 評估優先使用 Claude（`ANTHROPIC_API_KEY`），不可用時自動 fallb
 resume-job-matcher/
 ├── src/                       # 後端程式碼
 │   ├── api.py                # FastAPI 伺服器 (v1.3.0，含快取、搜尋、分頁、履歷匹配)
-│   ├── fetcher.py            # 職缺抓取 (RemoteOK + Remotive，Adapter 模式)
+│   ├── fetcher.py            # 職缺抓取 (5 來源，Adapter 模式，並行抓取)
 │   ├── matcher.py            # 匹配演算法 (加權評分 + 偏好過濾)
-│   ├── parser.py             # 履歷解析 (Markdown frontmatter)
+│   ├── parser.py             # 履歷解析 (Markdown frontmatter + 上傳檔案解析)
 │   ├── ai_evaluator.py      # AI 評估 (Claude 優先 / OpenAI fallback，並行批次)
 │   ├── openclaw_notifier.py # Telegram 通知封裝
 │   └── main.py              # 主程式 (GitHub Actions 排程入口)
 ├── ui/                        # 前端程式碼 (React + Vite)
 │   ├── src/
-│   │   ├── App.jsx          # React 主元件 (分頁、分頁、匹配、收藏)
+│   │   ├── App.jsx          # React 主元件 (分頁、搜尋、上傳、匹配、收藏)
 │   │   └── index.css        # 樣式
 │   ├── index.html
 │   └── vite.config.js
 ├── resumes/                   # 履歷存放 (.md 格式)
 ├── jobs/                      # 職缺資料快取 (latest.json)
-└── tests/                     # 測試套件 (253 tests)
+└── tests/                     # 測試套件 (279 tests)
 ```
+
+---
+
+## 職缺來源
+
+| 來源 | 類型 | 特色 |
+|------|------|------|
+| [RemoteOK](https://remoteok.com) | 遠端職缺 | 科技職缺為主，有薪資資訊 |
+| [Remotive](https://remotive.com) | 遠端職缺 | 全球遠端，分類齊全 |
+| [Arbeitnow](https://arbeitnow.com) | 歐洲遠端 | 以歐洲職缺為主，免費 API |
+| [Jobicy](https://jobicy.com) | 全球遠端 | 含年薪資訊（annualSalaryMin/Max） |
+| [Himalayas](https://himalayas.app) | 全球遠端 | 高品質職缺，自動分頁抓取 |
+
+> 所有來源均為免費 API，無需 API Key，每次執行並行抓取。
 
 ---
 
