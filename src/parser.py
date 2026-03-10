@@ -49,6 +49,10 @@ SKILL_KEYWORDS = {
     'goover', 'quey', 'ayfie', 'quillman', 'airtry', 'continents', 'polynomial', 'immutable',
     # AI 模型平台
     'together.ai', 'anyscale', 'infergo', 'fireworks', 'replicate', 'modal', 'runpod',
+    # 2025-2026 新興 AI 工具
+    'manus', 'monica', 'comfyui', 'midjourney', 'ideogram', 'recraft', 'flux',
+    'suno', 'udio', 'elevenlabs', 'heygen', 'runway', 'pika', 'kling', 'minimax',
+    'hailuo', 'luma', 'pika', 'runway', 'kuaishou', 'tencent-hunyuan',
 }
 
 # 角色關鍵字
