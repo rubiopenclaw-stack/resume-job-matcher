@@ -283,3 +283,70 @@ class TestAIModelPlatformKeywords:
         platforms = {'together.ai', 'anyscale', 'infergo', 'fireworks', 'replicate', 'modal', 'runpod'}
         for platform in platforms:
             assert platform in SKILL_KEYWORDS, f"'{platform}' missing from SKILL_KEYWORDS"
+
+
+# ===== Edge Case Tests =====
+
+class TestEdgeCases:
+
+    # 1) Special characters in skills
+    def test_special_char_skills_detected(self):
+        """Skills with special chars like c++, c#, ci/cd, node.js should be found."""
+        text = "Expert in C++, C#, CI/CD pipelines, Node.js, and scikit-learn"
+        result = extract_skills(text)
+        assert 'c++' in result
+        assert 'c#' in result
+        assert 'ci/cd' in result
+        assert 'node.js' in result
+        assert 'scikit-learn' in result
+
+    def test_skill_with_dot_in_platform_name(self):
+        """together.ai contains a dot and should match exactly, not partially."""
+        result_match = extract_skills("We use together.ai")
+        result_no_match = extract_skills("We use together and ai separately")
+        assert 'together.ai' in result_match
+        assert 'together.ai' not in result_no_match
+
+    # 2) Empty or malformed front matter
+    def test_malformed_front_matter_no_closing_delimiter(self, tmp_path):
+        """Front matter missing the closing --- should fall back to defaults."""
+        content = "---\nname: Bob\nemail: bob@example.com\n## Skills\n- Python\n"
+        path = (tmp_path / 'malformed.md')
+        path.write_text(content, encoding='utf-8')
+        result = parse_resume(str(path))
+        # Without closing ---, parts split gives < 3 elements, so front_matter stays {}
+        assert result['name'] == 'Anonymous'
+        assert 'python' in result['skills']
+
+    def test_front_matter_line_without_colon_is_skipped(self, tmp_path):
+        """Lines in front matter without ':' should not crash the parser."""
+        content = "---\nname: Carol\nthis line has no colon\nemail: carol@test.com\n---\n- React, TypeScript\n"
+        path = (tmp_path / 'nocodon.md')
+        path.write_text(content, encoding='utf-8')
+        result = parse_resume(str(path))
+        assert result['name'] == 'Carol'
+        assert result['email'] == 'carol@test.com'
+
+    def test_empty_front_matter_block(self, tmp_path):
+        """An empty front matter block (--- immediately followed by ---) uses defaults."""
+        content = "---\n---\n## Skills\n- Docker, Kubernetes\n"
+        path = (tmp_path / 'empty_fm.md')
+        path.write_text(content, encoding='utf-8')
+        result = parse_resume(str(path))
+        assert result['name'] == 'Anonymous'
+        assert result['email'] == ''
+        assert 'docker' in result['skills']
+
+    # 3) Role inference with mixed case skills
+    def test_infer_roles_mixed_case_skills_not_matched(self):
+        """infer_roles compares lowercase; mixed-case inputs won't match and fall back to General Developer."""
+        mixed_case_skills = ['Python', 'Machine Learning', 'LLM', 'GPT', 'NLP']
+        result = infer_roles(mixed_case_skills)
+        # Skills are uppercase so set membership fails → no role matches → General Developer
+        assert result == ['General Developer']
+
+    def test_infer_roles_lowercase_ai_skills_matched(self):
+        """Lowercased skills (as produced by extract_skills) correctly infer ai engineer role."""
+        lowercase_skills = ['python', 'machine learning', 'llm', 'gpt', 'nlp']
+        result = infer_roles(lowercase_skills)
+        assert 'ai engineer' in result
