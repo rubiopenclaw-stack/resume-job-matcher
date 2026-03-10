@@ -103,6 +103,35 @@ def infer_roles(skills: List[str]) -> List[str]:
     return matched_roles if matched_roles else ['General Developer']
 
 
+def parse_resume_content(text: str, filename: str = 'uploaded') -> Dict:
+    """從文字內容解析履歷（供 API 上傳使用，不需要存檔）"""
+    content = text
+    front_matter = {}
+
+    if content.strip().startswith('---'):
+        parts = content.split('---', 2)
+        if len(parts) >= 3:
+            for line in parts[1].strip().split('\n'):
+                if ':' in line:
+                    key, value = line.split(':', 1)
+                    front_matter[key.strip()] = value.strip()
+            content = parts[2]
+
+    skills = extract_skills(content)
+    roles = infer_roles(skills)
+    name = front_matter.get('name') or Path(filename).stem or 'Anonymous'
+
+    return {
+        'name': name,
+        'email': front_matter.get('email', ''),
+        'preferred_roles': [r.strip() for r in front_matter.get('preferred_roles', '').split(',') if r.strip()],
+        'preferred_locations': [l.strip() for l in front_matter.get('preferred_locations', 'Remote').split(',') if l.strip()],
+        'skills': skills,
+        'roles': roles,
+        'raw_content': content,
+    }
+
+
 def get_all_resumes(resumes_dir: str = 'resumes') -> List[Dict]:
     """取得所有履歷"""
     resumes = []

@@ -4,6 +4,8 @@ anthropic
 python-dotenv
 fastapi
 uvicorn[standard]
+python-multipart
+pypdf
 httpx
 pytest
 pytest-asyncio

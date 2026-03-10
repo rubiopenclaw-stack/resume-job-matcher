@@ -10,7 +10,7 @@ import os
 from collections import Counter
 from pathlib import Path
 from datetime import datetime, timedelta
-from fastapi import FastAPI, Query, HTTPException
+from fastapi import FastAPI, Query, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, List, Dict
 import threading
@@ -270,6 +270,62 @@ async def match_jobs_endpoint(
         "total": len(result_jobs),
         "resume": resume_data.get("name", resume),
         "jobs": result_jobs,
+    }
+
+
+@app.post("/api/upload-resume")
+async def upload_resume(file: UploadFile = File(...)):
+    """上傳履歷檔案（.md / .txt / .pdf），自動偵測技能並匹配職缺"""
+    filename = file.filename or 'uploaded'
+    ext = Path(filename).suffix.lower()
+
+    if ext not in ('.md', '.txt', '.pdf'):
+        raise HTTPException(status_code=400, detail="只支援 .md、.txt、.pdf 格式")
+
+    content_bytes = await file.read()
+
+    if ext == '.pdf':
+        try:
+            import pypdf
+            import io
+            reader = pypdf.PdfReader(io.BytesIO(content_bytes))
+            text = '\n'.join(page.extract_text() or '' for page in reader.pages)
+        except ImportError:
+            raise HTTPException(status_code=400, detail="PDF 支援未安裝，請上傳 .md 或 .txt")
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"PDF 解析失敗：{e}")
+    else:
+        try:
+            text = content_bytes.decode('utf-8')
+        except UnicodeDecodeError:
+            text = content_bytes.decode('latin-1')
+
+    try:
+        from src.parser import parse_resume_content
+        from src.matcher import match_jobs
+    except ModuleNotFoundError:
+        from parser import parse_resume_content
+        from matcher import match_jobs
+
+    resume_data = parse_resume_content(text, filename)
+    jobs, _ = get_jobs_cache()
+    matches = match_jobs(resume_data, jobs, top_n=50)
+
+    result_jobs = []
+    for m in matches:
+        job = dict(m['job'])
+        job['match_score'] = m['score']
+        job['matched_skills'] = m['matched_skills']
+        result_jobs.append(job)
+
+    return {
+        'name': resume_data.get('name', 'Anonymous'),
+        'skills': resume_data.get('skills', []),
+        'roles': resume_data.get('roles', []),
+        'preferred_roles': resume_data.get('preferred_roles', []),
+        'preferred_locations': resume_data.get('preferred_locations', []),
+        'total': len(result_jobs),
+        'jobs': result_jobs,
     }
 
 
