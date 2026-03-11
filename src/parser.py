@@ -52,7 +52,7 @@ SKILL_KEYWORDS = {
     # 2025-2026 新興 AI 工具
     'manus', 'monica', 'comfyui', 'midjourney', 'ideogram', 'recraft', 'flux',
     'suno', 'udio', 'elevenlabs', 'heygen', 'runway', 'pika', 'kling', 'minimax',
-    'hailuo', 'luma', 'pika', 'runway', 'kuaishou', 'tencent-hunyuan',
+    'hailuo', 'luma', 'kuaishou', 'tencent-hunyuan',
 }
 
 # 角色關鍵字
